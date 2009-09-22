@@ -34,9 +34,10 @@ The first string is chosen if len(people) == 1, otherwise the second
 string is chosen.
 """
 
+from twisted.python import log
+
 import csv
 import datetime
-import logging
 import os
 import os.path
 import re
@@ -105,8 +106,8 @@ def load_translations(directory):
         if not path.endswith(".csv"): continue
         locale, extension = path.split(".")
         if locale not in LOCALE_NAMES:
-            logging.error("Unrecognized locale %r (path: %s)", locale,
-                          os.path.join(directory, path))
+            log.err("Unrecognized locale %r (path: %s)" % (locale,
+                          os.path.join(directory, path)))
             continue
         f = open(os.path.join(directory, path), "r")
         _translations[locale] = {}
@@ -119,13 +120,13 @@ def load_translations(directory):
             else:
                 plural = "unknown"
             if plural not in ("plural", "singular", "unknown"):
-                logging.error("Unrecognized plural indicator %r in %s line %d",
-                              plural, path, i + 1)
+                log.err("Unrecognized plural indicator %r in %s line %d" % \
+                              (plural, path, i + 1))
                 continue
             _translations[locale].setdefault(plural, {})[english] = translation
         f.close()
     _supported_locales = frozenset(_translations.keys() + [_default_locale])
-    logging.info("Supported locales: %s", sorted(_supported_locales))
+    log.msg("Supported locales: %s" % sorted(_supported_locales))
 
 
 def get_supported_locales(cls):
