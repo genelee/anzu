@@ -34,13 +34,16 @@ The first string is chosen if len(people) == 1, otherwise the second
 string is chosen.
 """
 
-from twisted.python import log
+try:
+    import gettext
+except ImportError:
+    raise Exception("The gettext module is required, download at "
+                    "http://pypi.python.org/pypi/python-gettext")
 
-import csv
-import datetime
 import os
 import os.path
-import re
+import datetime
+from twisted.python import log
 
 _default_locale = "en_US"
 _translations = {}
@@ -75,56 +78,37 @@ def set_default_locale(code):
     _supported_locales = frozenset(_translations.keys() + [_default_locale])
 
 
-def load_translations(directory):
-    """Loads translations from CSV files in a directory.
+def load_translations(directory, domain="cyclone"):
+    """Loads translations from gettext's locale tree
 
-    Translations are strings with optional Python-style named placeholders
-    (e.g., "My name is %(name)s") and their associated translations.
+    Locale tree is similar to system's /usr/share/locale, like:
 
-    The directory should have translation files of the form LOCALE.csv,
-    e.g. es_GT.csv. The CSV files should have two or three columns: string,
-    translation, and an optional plural indicator. Plural indicators should
-    be one of "plural" or "singular". A given string can have both singular
-    and plural forms. For example "%(name)s liked this" may have a
-    different verb conjugation depending on whether %(name)s is one
-    name or a list of names. There should be two rows in the CSV file for
-    that string, one with plural indicator "singular", and one "plural".
-    For strings with no verbs that would change on translation, simply
-    use "unknown" or the empty string (or don't include the column at all).
+    {directory}/{lang}/LC_MESSAGES/{domain}.mo
 
-    Example translation es_LA.csv:
+    Three steps are required to have you app translated:
 
-        "I love you","Te amo"
-        "%(name)s liked this","A %(name)s les gust\xf3 esto","plural"
-        "%(name)s liked this","A %(name)s le gust\xf3 esto","singular"
+    1. Generate POT translation file
+        xgettext --language=Python --keyword=_:1,2 -d cyclone file1.py file2.html etc
+
+    2. Merge against existing POT file:
+        msgmerge old.po cyclone.po > new.po
+
+    3. Compile:
+        msgfmt cyclone.po -o {directory}/pt_BR/LC_MESSAGES/cyclone.mo
 
     """
     global _translations
     global _supported_locales
     _translations = {}
-    for path in os.listdir(directory):
-        if not path.endswith(".csv"): continue
-        locale, extension = path.split(".")
-        if locale not in LOCALE_NAMES:
-            log.err("Unrecognized locale %r (path: %s)" % (locale,
-                          os.path.join(directory, path)))
+
+    for lang in os.listdir(directory):
+        try:
+            os.stat(os.path.join(directory, lang, "LC_MESSAGES", domain+".mo"))
+            _translations[lang] = gettext.translation(domain, directory, languages=[lang])
+        except Exception, e:
+            log.err("Cannot load translation for '%s': %s" % (lang, str(e)))
             continue
-        f = open(os.path.join(directory, path), "r")
-        _translations[locale] = {}
-        for i, row in enumerate(csv.reader(f)):
-            if not row or len(row) < 2: continue
-            row = [c.decode("string_escape").decode("utf-8").strip(" ") for c in row]
-            english, translation = row[:2]
-            if len(row) > 2:
-                plural = row[2] or "unknown"
-            else:
-                plural = "unknown"
-            if plural not in ("plural", "singular", "unknown"):
-                log.err("Unrecognized plural indicator %r in %s line %d" % \
-                              (plural, path, i + 1))
-                continue
-            _translations[locale].setdefault(plural, {})[english] = translation
-        f.close()
+
     _supported_locales = frozenset(_translations.keys() + [_default_locale])
     log.msg("Supported locales: %s" % sorted(_supported_locales))
 
@@ -139,17 +123,22 @@ class Locale(object):
     def get_closest(cls, *locale_codes):
         """Returns the closest match for the given locale code."""
         for code in locale_codes:
-            if not code: continue
+            if not code:
+                continue
+
             code = code.replace("-", "_")
             parts = code.split("_")
             if len(parts) > 2:
                 continue
             elif len(parts) == 2:
                 code = parts[0].lower() + "_" + parts[1].upper()
+
             if code in _supported_locales:
                 return cls.get(code)
+
             if parts[0].lower() in _supported_locales:
                 return cls.get(parts[0].lower())
+
         return cls.get(_default_locale)
 
     @classmethod
@@ -158,15 +147,12 @@ class Locale(object):
 
         If it is not supported, we raise an exception.
         """
-        if not hasattr(cls, "_cache"):
-            cls._cache = {}
-        if code not in cls._cache:
-            assert code in _supported_locales
-            translations = _translations.get(code, {})
-            cls._cache[code] = Locale(code, translations)
-        return cls._cache[code]
+        translator = _translations.get(code, None)
+        if translator is None:
+            translator = gettext.NullTranslations()
+        return Locale(code, translator)
 
-    def __init__(self, code, translations):
+    def __init__(self, code, translator):
         self.code = code
         self.name = LOCALE_NAMES.get(code, {}).get("name", u"Unknown")
         self.rtl = False
@@ -174,7 +160,8 @@ class Locale(object):
             if self.code.startswith(prefix):
                 self.rtl = True
                 break
-        self.translations = translations
+
+        self.translator = translator
 
         # Initialize strings for date formatting
         _ = self.translate
@@ -194,15 +181,12 @@ class Locale(object):
         for the given message when count == 1.
         """
         if plural_message is not None:
-            assert count is not None
-            if count != 1:
-                message = plural_message
-                message_dict = self.translations.get("plural", {})
+            if count is not None:
+                return self.translator.ngettext(message, plural_message, count)
             else:
-                message_dict = self.translations.get("singular", {})
+                return self.translator.gettext(message)
         else:
-            message_dict = self.translations.get("unknown", {})
-        return message_dict.get(message, message)
+            return self.translator.gettext(message)
 
     def format_date(self, date, gmt_offset=0, relative=True, shorter=False,
                     full_format=False):
@@ -221,7 +205,8 @@ class Locale(object):
         now = datetime.datetime.utcnow()
         # Round down to now. Due to click skew, things are somethings
         # slightly in the future.
-        if date > now: date = now
+        if date > now:
+            date = now
         local_date = date - datetime.timedelta(minutes=gmt_offset)
         local_now = now - datetime.timedelta(minutes=gmt_offset)
         local_yesterday = local_now - datetime.timedelta(hours=24)
@@ -310,8 +295,10 @@ class Locale(object):
         of size 1.
         """
         _ = self.translate
-        if len(parts) == 0: return ""
-        if len(parts) == 1: return parts[0]
+        if len(parts) == 0:
+            return ""
+        if len(parts) == 1:
+            return parts[0]
         comma = u' \u0648 ' if self.code.startswith("fa") else u", "
         return _("%(commas)s and %(last)s") % {
             "commas": comma.join(parts[:-1]),
