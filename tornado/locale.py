@@ -113,7 +113,7 @@ def load_translations(directory):
         _translations[locale] = {}
         for i, row in enumerate(csv.reader(f)):
             if not row or len(row) < 2: continue
-            row = [c.decode("utf-8").strip() for c in row]
+            row = [c.decode("string_escape").decode("utf-8").strip(" ") for c in row]
             english, translation = row[:2]
             if len(row) > 2:
                 plural = row[2] or "unknown"
