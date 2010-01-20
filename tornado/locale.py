@@ -129,7 +129,7 @@ def load_translations(directory):
     log.msg("Supported locales: %s" % sorted(_supported_locales))
 
 
-def get_supported_locales(cls):
+def get_supported_locales():
     """Returns a list of all the supported locale codes."""
     return _supported_locales
 
