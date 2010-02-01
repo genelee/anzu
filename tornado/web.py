@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 #
-# Copyright 2009 Facebook
+# Copyright 2009-2010 Facebook
+# Copyright 2010 W-Mark Kubacki
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -63,12 +64,14 @@ import os.path
 import re
 import stat
 import sys
-import template
 import time
 import types
 import urllib
 import urlparse
 import uuid
+
+from mako.template import Template
+from mako.lookup import TemplateLookup
 
 
 class RequestHandler(object):
@@ -392,25 +395,28 @@ class RequestHandler(object):
         We return the generated string. To generate and write a template
         as a response, use render() above.
         """
-        # If no template_path is specified, use the path of the calling file
-        template_path = self.application.settings.get("template_path")
-        if not template_path:
-            frame = sys._getframe(0)
-            web_file = frame.f_code.co_filename
-            while frame.f_code.co_filename == web_file:
-                frame = frame.f_back
-            template_path = os.path.dirname(frame.f_code.co_filename)
         if not getattr(RequestHandler, "_templates", None):
-            RequestHandler._templates = {}
-        if template_path not in RequestHandler._templates:
-            RequestHandler._templates[template_path] = template.Loader(
-                template_path)
-        t = RequestHandler._templates[template_path].load(template_name)
+            # If no template_path is specified, use the path of the calling file
+            template_path = self.application.settings.get("template_path")
+            if not template_path:
+                frame = sys._getframe(0)
+                web_file = frame.f_code.co_filename
+                while frame.f_code.co_filename == web_file:
+                    frame = frame.f_back
+                template_path = os.path.dirname(frame.f_code.co_filename)
+            RequestHandler._templates = TemplateLookup(
+                directories=template_path.split(','),
+                module_directory=self.application.settings.get("mako_module_directory"),
+                input_encoding='utf-8',
+                output_encoding='utf-8',
+                filesystem_checks=self.application.settings.get("debug") or False)
+        t = RequestHandler._templates.get_template(template_name)
         args = dict(
             handler=self,
             request=self.request,
             current_user=self.current_user,
             locale=self.locale,
+            lookup=RequestHandler._templates,
             _=self.locale.translate,
             static_url=self.static_url,
             xsrf_form_html=self.xsrf_form_html,
@@ -418,7 +424,7 @@ class RequestHandler(object):
         )
         args.update(self.ui)
         args.update(kwargs)
-        return t.generate(**args)
+        return t.render(**args)
 
     def flush(self, include_footers=False):
         """Flushes the current output buffer to the nextwork."""

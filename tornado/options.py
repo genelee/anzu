@@ -350,3 +350,5 @@ options = _Options.instance()
 define("help", type=bool, help="show this help information")
 define("logging", default="info", help="set the Python log level",
        metavar="info|warning|error")
+define("mako_module_directory",
+       help="used by Mako for storing compiled templates")
