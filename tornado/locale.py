@@ -123,22 +123,17 @@ class Locale(object):
     def get_closest(cls, *locale_codes):
         """Returns the closest match for the given locale code."""
         for code in locale_codes:
-            if not code:
-                continue
-
+            if not code: continue
             code = code.replace("-", "_")
             parts = code.split("_")
             if len(parts) > 2:
                 continue
             elif len(parts) == 2:
                 code = parts[0].lower() + "_" + parts[1].upper()
-
             if code in _supported_locales:
                 return cls.get(code)
-
             if parts[0].lower() in _supported_locales:
                 return cls.get(parts[0].lower())
-
         return cls.get(_default_locale)
 
     @classmethod
@@ -160,14 +155,13 @@ class Locale(object):
             if self.code.startswith(prefix):
                 self.rtl = True
                 break
-
         self.translator = translator
 
         # Initialize strings for date formatting
         _ = self.translate
         self._months = [
             _("January"), _("February"), _("March"), _("April"),
-            _("May"), _("June"), _("July"), _("August"),
+            _("May"), _("June"), _("July"), _("August"), 
             _("September"), _("October"), _("November"), _("December")]
         self._weekdays = [
             _("Monday"), _("Tuesday"), _("Wednesday"), _("Thursday"),
@@ -205,8 +199,7 @@ class Locale(object):
         now = datetime.datetime.utcnow()
         # Round down to now. Due to click skew, things are somethings
         # slightly in the future.
-        if date > now:
-            date = now
+        if date > now: date = now
         local_date = date - datetime.timedelta(minutes=gmt_offset)
         local_now = now - datetime.timedelta(minutes=gmt_offset)
         local_yesterday = local_now - datetime.timedelta(hours=24)
@@ -295,10 +288,8 @@ class Locale(object):
         of size 1.
         """
         _ = self.translate
-        if len(parts) == 0:
-            return ""
-        if len(parts) == 1:
-            return parts[0]
+        if len(parts) == 0: return ""
+        if len(parts) == 1: return parts[0]
         comma = u' \u0648 ' if self.code.startswith("fa") else u", "
         return _("%(commas)s and %(last)s") % {
             "commas": comma.join(parts[:-1]),
