@@ -406,6 +406,7 @@ class RequestHandler(object):
             RequestHandler._templates = TemplateLookup(
                 directories=template_path.split(','),
                 module_directory=self.application.settings.get("mako_module_directory"),
+                input_encoding='utf-8',
                 output_encoding='utf-8',
                 filesystem_checks=self.application.settings.get("debug") or False)
         t = RequestHandler._templates.get_template(template_name)
