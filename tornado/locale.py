@@ -102,6 +102,7 @@ def load_translations(directory, domain="cyclone"):
     _translations = {}
 
     for lang in os.listdir(directory):
+        if os.path.isfile(os.path.join(directory, lang)): continue
         try:
             os.stat(os.path.join(directory, lang, "LC_MESSAGES", domain+".mo"))
             _translations[lang] = gettext.translation(domain, directory, languages=[lang])
