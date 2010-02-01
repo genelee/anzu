@@ -43,7 +43,7 @@ except ImportError:
 import os
 import os.path
 import datetime
-from twisted.python import log
+import logging
 
 _default_locale = "en_US"
 _translations = {}
@@ -106,11 +106,11 @@ def load_translations(directory, domain="cyclone"):
             os.stat(os.path.join(directory, lang, "LC_MESSAGES", domain+".mo"))
             _translations[lang] = gettext.translation(domain, directory, languages=[lang])
         except Exception, e:
-            log.err("Cannot load translation for '%s': %s" % (lang, str(e)))
+            logging.error("Cannot load translation for '%s': %s", lang, str(e))
             continue
 
     _supported_locales = frozenset(_translations.keys() + [_default_locale])
-    log.msg("Supported locales: %s" % sorted(_supported_locales))
+    logging.info("Supported locales: %s", sorted(_supported_locales))
 
 
 def get_supported_locales():
