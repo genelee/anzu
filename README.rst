@@ -1,3 +1,18 @@
+=============
+wmark/tornado
+=============
+:Info: See `github <http://github.com/wmark/tornado>`_ for the latest source.
+:Author: W-Mark Kubacki <wmark@hurrikane.de>
+
+About
+=====
+
+Key differences to vanilla Tornado
+----------------------------------
+
+- Localization is based upon the standard `Gettext <http://www.gnu.org/software/gettext/>`_ instead of the CSV implementation in the original Tornado. Moreover, it supports pluralization exactly like Tornado does.
+- Templating is done by `Mako <http://www.makotemplates.org/>`_, which features everything that the original templating module could (including compiling into native Python modules) and which has a mature error reporting functions.
+
 Tornado
 =======
 Tornado is an open source version of the scalable, non-blocking web server
