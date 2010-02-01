@@ -167,7 +167,7 @@ class Locale(object):
         _ = self.translate
         self._months = [
             _("January"), _("February"), _("March"), _("April"),
-            _("May"), _("June"), _("July"), _("August"), 
+            _("May"), _("June"), _("July"), _("August"),
             _("September"), _("October"), _("November"), _("December")]
         self._weekdays = [
             _("Monday"), _("Tuesday"), _("Wednesday"), _("Thursday"),
@@ -182,11 +182,11 @@ class Locale(object):
         """
         if plural_message is not None:
             if count is not None:
-                return self.translator.ngettext(message, plural_message, count)
+                return self.translator.ungettext(message, plural_message, count)
             else:
-                return self.translator.gettext(message)
+                return self.translator.ugettext(message)
         else:
-            return self.translator.gettext(message)
+            return self.translator.ugettext(message)
 
     def format_date(self, date, gmt_offset=0, relative=True, shorter=False,
                     full_format=False):
