@@ -50,6 +50,7 @@ import calendar
 import Cookie
 import cStringIO
 import datetime
+import database
 import email.utils
 import escape
 import functools
@@ -63,8 +64,11 @@ import mimetypes
 import murmur
 import os.path
 import re
+import session
 import stat
 import sys
+import tempfile
+import template
 import time
 import types
 import urllib
@@ -87,6 +91,10 @@ class RequestHandler(object):
     def __init__(self, application, request, transforms=None):
         self.application = application
         self.request = request
+        if isinstance(self, StaticFileHandler):
+            self.session = None
+        else:
+            self.session = self._create_session()
         self._headers_written = False
         self._finished = False
         self._auto_finish = True
@@ -476,10 +484,22 @@ class RequestHandler(object):
                 content_length = sum(len(part) for part in self._write_buffer)
                 self.set_header("Content-Length", content_length)
 
+        if self.session is not None and self.session._delete_cookie:
+            self.clear_cookie(self.settings.get('session_cookie_name', 'session_id'))
+        elif self.session is not None:
+            self.session.refresh() # advance expiry time and save session
+            self.set_secure_cookie(self.settings.get('session_cookie_name', 'session_id'),
+                                   self.session.session_id,
+                                   expires_days=None,
+                                   expires=self.session.expires,
+                                   path=self.settings.get('session_cookie_path', '/'),
+                                   domain=self.settings.get('session_cookie_domain'))
+
         if not self.application._wsgi:
             self.flush(include_footers=True)
             self.request.finish()
             self._log()
+
         self._finished = True
 
     def send_error(self, status_code=500, **kwargs):
@@ -774,6 +794,59 @@ class RequestHandler(object):
     def _ui_method(self, method):
         return lambda *args, **kwargs: method(self, *args, **kwargs)
 
+    def _create_session(self):
+        settings = self.application.settings # just a shortcut
+        url = settings.get('session_storage', 'file://') # default to file storage
+        session_id = self.get_secure_cookie(settings.get('session_cookie_name', 'session_id'))
+        kw = {'security_model': settings.get('session_security_model', []),
+              'duration': settings.get('session_age', 900),
+              'ip_address': self.request.remote_ip,
+              'user_agent': self.request.headers.get('User-Agent'),
+              'regeneration_interval': settings.get('session_regeneration_interval', 240)
+              }
+        new_session = None
+        old_session = None
+
+        if url and not url.startswith('file'):
+            if url.startswith('mysql'):
+                old_session = session.MySQLSession.load(session_id, settings['_db'])
+                if old_session is None or old_session._is_expired(): # create a new session
+                    new_session = session.MySQLSession(settings['_db'], **kw)
+            elif url.startswith('postgresql'):
+                raise NotImplemented
+            elif url.startswith('sqlite'):
+                raise NotImplemented
+            elif url.startswith('memcached'):
+                old_session = session.MemcachedSession.load(session_id, settings['_db'])
+                if old_session is None or old_session._is_expired(): # create new session
+                    new_session = session.MemcachedSession(settings['_db'], **kw)
+            elif url.startswith('mongodb'):
+                old_session = session.MongoDBSession.load(session_id, settings['_db'])
+                if old_session is None or old_session._is_expired(): # create new session
+                    new_session = session.MongoDBSession(settings['_db'], **kw)
+            elif url.startswith('redis'):
+                old_session = session.RedisSession.load(session_id, settings['_db'])
+                if old_session is None or old_session._is_expired(): # create new session
+                    new_session = session.RedisSession(settings['_db'], **kw)
+            elif url.startswith('dir'):
+                dir_path = url[6:]
+                old_session = session.DirSession.load(session_id, dir_path)
+                if old_session is None or old_session._is_expired(): # create new session
+                    new_session = session.DirSession(dir_path, **kw)
+        else:
+            file_path = url[7:]
+            old_session = session.FileSession.load(session_id, file_path)
+            if old_session is None or old_session._is_expired(): # create new session
+                new_session = session.FileSession(file_path, **kw)
+
+        if old_session is not None:
+            if old_session._should_regenerate():
+                old_session.refresh(new_session_id=True)
+                # TODO: security checks
+            return old_session
+
+        return new_session
+
 
 def asynchronous(method):
     """Wrap request handler methods with this if they are asynchronous.
@@ -890,6 +963,42 @@ class Application(object):
             self.transforms.append(ChunkedTransferEncoding)
         else:
             self.transforms = transforms
+        if not settings.get('session_storage'):
+            session_file = tempfile.NamedTemporaryFile(
+                prefix='tornado_sessions_', delete=False)
+            settings['session_storage'] = 'file://'+session_file.name
+        elif settings.get('session_storage').startswith('mysql'):
+            # create a connection to MySQL 
+            u, p, h, d = session.MySQLSession._parse_connection_details(
+                settings['session_storage'])
+            settings['_db'] = database.Connection(h, d, user=u, password=p)
+        elif settings.get('session_storage').startswith('redis'):
+            try:
+                import redis
+                settings['_db'] = redis.Redis()
+            except ImportError:
+                pass
+        elif settings.get('session_storage').startswith('mongodb'):
+            try:
+                import pymongo
+                h, p, d = session.MongoDBSession._parse_connection_details(
+                    settings['session_storage'])
+                conn = pymongo.Connection(host=h, port=p)
+                db = pymongo.database.Database(conn, d)
+                db.tornado_sessions.ensure_index('session_id', unique=True)
+                settings['_db'] = pymongo.collection.Collection(db, 'tornado_sessions')
+            except ImportError:
+                pass
+        elif settings.get('session_storage').startswith('memcached'):
+            try:
+                import pylibmc
+                servers = session.MemcachedSession._parse_connection_details(
+                    settings['session_storage'])
+                conn = pylibmc.Client(servers, binary=True)
+                conn.behaviors['no_block'] = 1 # async I/O
+                settings['_db'] = conn
+            except ImportError:
+                pass
         self.handlers = []
         self.trivial_handlers = {}
         self.named_handlers = {}
