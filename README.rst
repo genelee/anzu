@@ -17,39 +17,41 @@ Key differences to vanilla Tornado
 
 Extended Example
 ================
-    import tornado.httpserver
-    import tornado.ioloop
-    import tornado.web
-    import tornado.locale
+<pre><code>
+import tornado.httpserver
+import tornado.ioloop
+import tornado.web
+import tornado.locale
 
-    class MainHandler(tornado.web.RequestHandler):
-        def get(self):
-            # you don't need following line in templates
-            _ = self.locale.translate
-            self.write(_("Hello, world"))
+class MainHandler(tornado.web.RequestHandler):
+    def get(self):
+        # you don't need following line in templates
+        _ = self.locale.translate
+        self.write(_("Hello, world"))
 
-    class SecondHandler(tornado.web.RequestHandler):
-        def get(self, name):
-            # you don't need following line in templates
-            _ = self.locale.translate
-            self.write(_("Hello, %s") % name)
+class SecondHandler(tornado.web.RequestHandler):
+    def get(self, name):
+        # you don't need following line in templates
+        _ = self.locale.translate
+        self.write(_("Hello, %s") % name)
 
-    trivial_handlers = {
-        "/": MainHandler,
-    }
-    handlers = [
-        (r"/(\w+)", SecondHandler),
-    ]
-    application = tornado.web.Application(
-        handlers=handlers, trivial_handlers=trivial_handlers
-    )
+trivial_handlers = {
+    "/": MainHandler,
+}
+handlers = [
+    (r"/(\w+)", SecondHandler),
+]
+application = tornado.web.Application(
+    handlers=handlers, trivial_handlers=trivial_handlers
+)
 
-    if __name__ == "__main__":
-        cwd = os.path.dirname(__file__)
-        tornado.locale.load_translations(os.path.join(cwd, "locales"), "messages")
-        http_server = tornado.httpserver.HTTPServer(application)
-        http_server.listen(8888)
-        tornado.ioloop.IOLoop.instance().start()
+if __name__ == "__main__":
+    cwd = os.path.dirname(__file__)
+    tornado.locale.load_translations(os.path.join(cwd, "locales"), "messages")
+    http_server = tornado.httpserver.HTTPServer(application)
+    http_server.listen(8888)
+    tornado.ioloop.IOLoop.instance().start()
+</code></pre>
 
 `trivial_handlers` are being looked up first.
 
