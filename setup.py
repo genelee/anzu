@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 #
 # Copyright 2009 Facebook
+# Copyright 2010 W-Mark Kubacki
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -37,10 +38,10 @@ distutils.core.setup(
     packages = ["tornado"],
     ext_modules = extensions,
     author="Facebook",
-    author_email="python-tornado@googlegroups.com",
+    author_email="wmark+hurricane@hurrikane.de",
     url="http://www.tornadoweb.org/",
     license="http://www.apache.org/licenses/LICENSE-2.0",
-    description="Tornado is an open source version of the scalable, non-blocking web server and and tools that power FriendFeed",
+    description="Fork of Facebook's Tornado with support for Mako templating, gettext i18n and sessions.",
     install_requires = [
         "Mako >= 0.2",
         "Murmur",
