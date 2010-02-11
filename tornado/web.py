@@ -68,7 +68,6 @@ import session
 import stat
 import sys
 import tempfile
-import template
 import time
 import types
 import urllib
