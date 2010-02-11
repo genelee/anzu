@@ -395,7 +395,7 @@ class RequestHandler(object):
         We return the generated string. To generate and write a template
         as a response, use render() above.
         """
-        if not getattr(RequestHandler, "_templates", None):
+        if not getattr(Application, "_templates", None):
             # If no template_path is specified, use the path of the calling file
             template_path = self.application.settings.get("template_path")
             if not template_path:
@@ -404,19 +404,19 @@ class RequestHandler(object):
                 while frame.f_code.co_filename == web_file:
                     frame = frame.f_back
                 template_path = os.path.dirname(frame.f_code.co_filename)
-            RequestHandler._templates = TemplateLookup(
+            Application._templates = TemplateLookup(
                 directories=template_path.split(','),
                 module_directory=self.application.settings.get("mako_module_directory"),
                 input_encoding='utf-8',
                 output_encoding='utf-8',
                 filesystem_checks=self.application.settings.get("debug") or False)
-        t = RequestHandler._templates.get_template(template_name)
+        t = Application._templates.get_template(template_name)
         args = dict(
             handler=self,
             request=self.request,
             current_user=self.current_user,
             locale=self.locale,
-            lookup=RequestHandler._templates,
+            lookup=Application._templates,
             _=self.locale.translate,
             static_url=self.static_url,
             xsrf_form_html=self.xsrf_form_html,
