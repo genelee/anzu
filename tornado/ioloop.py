@@ -175,9 +175,17 @@ class IOLoop(object):
 
         # Create a pipe that we send bogus data to when we want to wake
         # the I/O loop when it is idle
-        trigger = Pipe()
-        self._waker_reader = self._waker_writer = trigger
-        self.add_handler(trigger.reader_fd, self._read_waker, self.READ)
+        if os.name != 'posix':
+            trigger = Pipe()
+            self._waker_reader = self._waker_writer = trigger
+            self.add_handler(trigger.reader_fd, self._read_waker, self.READ)
+        else:
+            r, w = os.pipe()
+            self._set_nonblocking(r)
+            self._set_nonblocking(w)
+            self._waker_reader = os.fdopen(r, "r", 0)
+            self._waker_writer = os.fdopen(w, "w", 0)
+            self.add_handler(r, self._read_waker, self.WRITE)
 
     @classmethod
     def instance(cls):
