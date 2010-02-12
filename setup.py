@@ -45,5 +45,6 @@ distutils.core.setup(
     install_requires = [
         "Mako >= 0.2",
         "Murmur",
+        "FormEncode >= 1.2.2",
     ],
 )
