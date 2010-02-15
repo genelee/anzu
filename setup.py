@@ -30,16 +30,16 @@ major, minor = sys.version_info[:2]
 python_26 = (major > 2 or (major == 2 and minor >= 6))
 if "linux" in sys.platform.lower() and not python_26:
     extensions.append(distutils.core.Extension(
-        "tornado.epoll", ["tornado/epoll.c"]))
+        "anzu.epoll", ["anzu/epoll.c"]))
 
 distutils.core.setup(
-    name="tornado",
+    name="anzu",
     version="0.2",
-    packages = ["tornado"],
+    packages = ["anzu"],
     ext_modules = extensions,
-    author="Facebook",
-    author_email="wmark+hurricane@hurrikane.de",
-    url="http://www.tornadoweb.org/",
+    author="W-Mark Kubacki",
+    author_email="wmark+anzu@hurrikane.de",
+    url="http://mark.ossdl.de/tags/anzu",
     license="http://www.apache.org/licenses/LICENSE-2.0",
     description="Fork of Facebook's Tornado with support for Mako templating, gettext i18n and sessions.",
     install_requires = [
