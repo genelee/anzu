@@ -16,15 +16,15 @@
 
 import logging
 import os.path
-import tornado.auth
-import tornado.escape
-import tornado.httpserver
-import tornado.ioloop
-import tornado.options
-import tornado.web
+import anzu.auth
+import anzu.escape
+import anzu.httpserver
+import anzu.ioloop
+import anzu.options
+import anzu.web
 import uimodules
 
-from tornado.options import define, options
+from anzu.options import define, options
 
 define("port", default=8888, help="run on the given port", type=int)
 define("facebook_api_key", help="your Facebook application API key",
@@ -33,7 +33,7 @@ define("facebook_secret", help="your Facebook application secret",
        default="32fc6114554e3c53d5952594510021e2")
 
 
-class Application(tornado.web.Application):
+class Application(anzu.web.Application):
     def __init__(self):
         trivial_handlers = {
             "/": MainHandler,
@@ -52,19 +52,19 @@ class Application(tornado.web.Application):
             ui_modules= {"Post": PostModule},
             debug=True,
         )
-        tornado.web.Application.__init__(self, trivial_handlers=trivial_handlers, **settings)
+        anzu.web.Application.__init__(self, trivial_handlers=trivial_handlers, **settings)
 
 
-class BaseHandler(tornado.web.RequestHandler):
+class BaseHandler(anzu.web.RequestHandler):
     def get_current_user(self):
         user_json = self.get_secure_cookie("user")
         if not user_json: return None
-        return tornado.escape.json_decode(user_json)
+        return anzu.escape.json_decode(user_json)
 
 
-class MainHandler(BaseHandler, tornado.auth.FacebookMixin):
-    @tornado.web.authenticated
-    @tornado.web.asynchronous
+class MainHandler(BaseHandler, anzu.auth.FacebookMixin):
+    @anzu.web.authenticated
+    @anzu.web.asynchronous
     def get(self):
         self.facebook_request(
             method="stream.get",
@@ -81,8 +81,8 @@ class MainHandler(BaseHandler, tornado.auth.FacebookMixin):
         self.render("stream.html", stream=stream)
 
 
-class AuthLoginHandler(BaseHandler, tornado.auth.FacebookMixin):
-    @tornado.web.asynchronous
+class AuthLoginHandler(BaseHandler, anzu.auth.FacebookMixin):
+    @anzu.web.asynchronous
     def get(self):
         if self.get_argument("session", None):
             self.get_authenticated_user(self.async_callback(self._on_auth))
@@ -91,13 +91,13 @@ class AuthLoginHandler(BaseHandler, tornado.auth.FacebookMixin):
 
     def _on_auth(self, user):
         if not user:
-            raise tornado.web.HTTPError(500, "Facebook auth failed")
-        self.set_secure_cookie("user", tornado.escape.json_encode(user))
+            raise anzu.web.HTTPError(500, "Facebook auth failed")
+        self.set_secure_cookie("user", anzu.escape.json_encode(user))
         self.redirect(self.get_argument("next", "/"))
 
 
-class AuthLogoutHandler(BaseHandler, tornado.auth.FacebookMixin):
-    @tornado.web.asynchronous
+class AuthLogoutHandler(BaseHandler, anzu.auth.FacebookMixin):
+    @anzu.web.asynchronous
     def get(self):
         self.clear_cookie("user")
         if not self.current_user:
@@ -112,16 +112,16 @@ class AuthLogoutHandler(BaseHandler, tornado.auth.FacebookMixin):
         self.redirect(self.get_argument("next", "/"))
 
 
-class PostModule(tornado.web.UIModule):
+class PostModule(anzu.web.UIModule):
     def render(self, post, actor):
         return self.render_string("modules/post.html", post=post, actor=actor)
 
 
 def main():
-    tornado.options.parse_command_line()
-    http_server = tornado.httpserver.HTTPServer(Application())
+    anzu.options.parse_command_line()
+    http_server = anzu.httpserver.HTTPServer(Application())
     http_server.listen(options.port)
-    tornado.ioloop.IOLoop.instance().start()
+    anzu.ioloop.IOLoop.instance().start()
 
 
 if __name__ == "__main__":

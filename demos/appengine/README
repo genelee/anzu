@@ -4,12 +4,12 @@ This example is designed to run in Google AppEngine, so there are a couple
 of steps to get it running. You can download the Google AppEngine Python
 development environment at http://code.google.com/appengine/downloads.html.
 
-1. Link or copy the tornado code directory into this directory:
+1. Link or copy the anzu code directory into this directory:
 
-   ln -s ../../tornado tornado
+   ln -s ../../anzu anzu
 
    AppEngine doesn't use the Python modules installed on this machine.
-   You need to have the 'tornado' module copied or linked for AppEngine
+   You need to have the 'anzu' module copied or linked for AppEngine
    to find it.
 
 3. Install and run dev_appserver
@@ -17,7 +17,7 @@ development environment at http://code.google.com/appengine/downloads.html.
    If you don't already have the App Engine SDK, download it from
    http://code.google.com/appengine/downloads.html
 
-   To start the tornado demo, run the dev server on this directory:
+   To start the anzu demo, run the dev server on this directory:
 
    dev_appserver.py .
 
@@ -34,7 +34,7 @@ If you want to deploy the blog in production:
 
    First register a new application at http://appengine.google.com/.
    Then edit app.yaml in this directory and change the "application"
-   setting from "tornado-appenginge" to your new application id.
+   setting from "anzu-appenginge" to your new application id.
 
 2. Deploy to App Engine
 

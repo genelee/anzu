@@ -5,25 +5,25 @@
 #
 
 import os.path
-import tornado.httpserver
-import tornado.ioloop
-import tornado.web
-import tornado.locale
+import anzu.httpserver
+import anzu.ioloop
+import anzu.web
+import anzu.locale
 
-class MainHandler(tornado.web.RequestHandler):
+class MainHandler(anzu.web.RequestHandler):
     def get(self):
         # you don't need following line in templates
         _ = self.locale.translate
         self.write(_("Current locale is %s from the available %s.")
-            % (self.locale.code, tornado.locale.get_supported_locales()))
+            % (self.locale.code, anzu.locale.get_supported_locales()))
 
-application = tornado.web.Application([
+application = anzu.web.Application([
     (r"/", MainHandler),
 ])
 
 if __name__ == "__main__":
     cwd = os.path.dirname(__file__)
-    tornado.locale.load_translations(os.path.join(cwd, "locales"), "messages")
-    http_server = tornado.httpserver.HTTPServer(application)
+    anzu.locale.load_translations(os.path.join(cwd, "locales"), "messages")
+    http_server = anzu.httpserver.HTTPServer(application)
     http_server.listen(8888)
-    tornado.ioloop.IOLoop.instance().start()
+    anzu.ioloop.IOLoop.instance().start()

@@ -1,7 +1,7 @@
 =============
-wmark/tornado
+wmark/anzu
 =============
-:Info: See `github <http://github.com/wmark/tornado>`_ for the latest source.
+:Info: See `github <http://github.com/wmark/anzu>`_ for the latest source.
 :Author: W-Mark Kubacki <wmark@hurrikane.de>
 
 About
@@ -23,18 +23,18 @@ Extended Example
 
 ::
 
-    import tornado.httpserver
-    import tornado.ioloop
-    import tornado.web
-    import tornado.locale
+    import anzu.httpserver
+    import anzu.ioloop
+    import anzu.web
+    import anzu.locale
 
-    class MainHandler(tornado.web.RequestHandler):
+    class MainHandler(anzu.web.RequestHandler):
         def get(self):
             # you don't need following line in templates
             _ = self.locale.translate
             self.write(_("Hello, world"))
 
-    class SecondHandler(tornado.web.RequestHandler):
+    class SecondHandler(anzu.web.RequestHandler):
         def get(self, name):
             # you don't need following line in templates
             _ = self.locale.translate
@@ -46,16 +46,16 @@ Extended Example
     handlers = [
         (r"/(\w+)", SecondHandler),
     ]
-    application = tornado.web.Application(
+    application = anzu.web.Application(
         handlers=handlers, trivial_handlers=trivial_handlers
     )
 
     if __name__ == "__main__":
         cwd = os.path.dirname(__file__)
-        tornado.locale.load_translations(os.path.join(cwd, "locales"), "messages")
-        http_server = tornado.httpserver.HTTPServer(application)
+        anzu.locale.load_translations(os.path.join(cwd, "locales"), "messages")
+        http_server = anzu.httpserver.HTTPServer(application)
         http_server.listen(8888)
-        tornado.ioloop.IOLoop.instance().start()
+        anzu.ioloop.IOLoop.instance().start()
 
 `trivial_handlers` are being looked up first.
 

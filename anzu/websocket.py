@@ -16,10 +16,10 @@
 
 import functools
 import logging
-import tornado.escape
-import tornado.web
+import anzu.escape
+import anzu.web
 
-class WebSocketHandler(tornado.web.RequestHandler):
+class WebSocketHandler(anzu.web.RequestHandler):
     """A request handler for HTML 5 Web Sockets.
 
     See http://www.w3.org/TR/2009/WD-websockets-20091222/ for details on the
@@ -38,7 +38,7 @@ class WebSocketHandler(tornado.web.RequestHandler):
 
     Web Sockets are not standard HTTP connections. The "handshake" is HTTP,
     but after the handshake, the protocol is message-based. Consequently,
-    most of the Tornado HTTP facilities are not available in handlers of this
+    most of the Anzu HTTP facilities are not available in handlers of this
     type. The only communication methods available to you are send_message()
     and receive_message(). Likewise, your request handler class should
     implement open() method rather than get() or post().
@@ -57,7 +57,7 @@ class WebSocketHandler(tornado.web.RequestHandler):
     This script pops up an alert box that says "You said: Hello, world".
     """
     def __init__(self, application, request):
-        tornado.web.RequestHandler.__init__(self, application, request)
+        anzu.web.RequestHandler.__init__(self, application, request)
         self.stream = request.connection.stream
 
     def _execute(self, transforms, *args, **kwargs):
@@ -73,7 +73,7 @@ class WebSocketHandler(tornado.web.RequestHandler):
             "HTTP/1.1 101 Web Socket Protocol Handshake\r\n"
             "Upgrade: WebSocket\r\n"
             "Connection: Upgrade\r\n"
-            "Server: TornadoServer/0.2\r\n"
+            "Server: Anzu/0.2\r\n"
             "WebSocket-Origin: " + self.request.headers["Origin"] + "\r\n"
             "WebSocket-Location: ws://" + self.request.host +
             self.request.path + "\r\n\r\n")
@@ -82,7 +82,7 @@ class WebSocketHandler(tornado.web.RequestHandler):
     def write_message(self, message):
         """Sends the given message to the client of this Web Socket."""
         if isinstance(message, dict):
-            message = tornado.escape.json_encode(message)
+            message = anzu.escape.json_encode(message)
         if isinstance(message, unicode):
             message = message.encode("utf-8")
         assert isinstance(message, str)

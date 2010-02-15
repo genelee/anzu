@@ -15,21 +15,21 @@
 # under the License.
 
 import logging
-import tornado.auth
-import tornado.escape
-import tornado.httpserver
-import tornado.ioloop
-import tornado.options
-import tornado.web
+import anzu.auth
+import anzu.escape
+import anzu.httpserver
+import anzu.ioloop
+import anzu.options
+import anzu.web
 import os.path
 import uuid
 
-from tornado.options import define, options
+from anzu.options import define, options
 
 define("port", default=8888, help="run on the given port", type=int)
 
 
-class Application(tornado.web.Application):
+class Application(anzu.web.Application):
     def __init__(self):
         trivial_handlers = {
             "/": MainHandler,
@@ -45,18 +45,18 @@ class Application(tornado.web.Application):
             static_path=os.path.join(os.path.dirname(__file__), "static"),
             xsrf_cookies=True,
         )
-        tornado.web.Application.__init__(self, trivial_handlers=trivial_handlers, **settings)
+        anzu.web.Application.__init__(self, trivial_handlers=trivial_handlers, **settings)
 
 
-class BaseHandler(tornado.web.RequestHandler):
+class BaseHandler(anzu.web.RequestHandler):
     def get_current_user(self):
         user_json = self.get_secure_cookie("user")
         if not user_json: return None
-        return tornado.escape.json_decode(user_json)
+        return anzu.escape.json_decode(user_json)
 
 
 class MainHandler(BaseHandler):
-    @tornado.web.authenticated
+    @anzu.web.authenticated
     def get(self):
         self.render("index.html", messages=MessageMixin.cache)
 
@@ -94,7 +94,7 @@ class MessageMixin(object):
 
 
 class MessageNewHandler(BaseHandler, MessageMixin):
-    @tornado.web.authenticated
+    @anzu.web.authenticated
     def post(self):
         message = {
             "id": str(uuid.uuid4()),
@@ -110,8 +110,8 @@ class MessageNewHandler(BaseHandler, MessageMixin):
 
 
 class MessageUpdatesHandler(BaseHandler, MessageMixin):
-    @tornado.web.authenticated
-    @tornado.web.asynchronous
+    @anzu.web.authenticated
+    @anzu.web.asynchronous
     def post(self):
         cursor = self.get_argument("cursor", None)
         self.wait_for_messages(self.async_callback(self.on_new_messages),
@@ -124,8 +124,8 @@ class MessageUpdatesHandler(BaseHandler, MessageMixin):
         self.finish(dict(messages=messages))
 
 
-class AuthLoginHandler(BaseHandler, tornado.auth.GoogleMixin):
-    @tornado.web.asynchronous
+class AuthLoginHandler(BaseHandler, anzu.auth.GoogleMixin):
+    @anzu.web.asynchronous
     def get(self):
         if self.get_argument("openid.mode", None):
             self.get_authenticated_user(self.async_callback(self._on_auth))
@@ -134,8 +134,8 @@ class AuthLoginHandler(BaseHandler, tornado.auth.GoogleMixin):
 
     def _on_auth(self, user):
         if not user:
-            raise tornado.web.HTTPError(500, "Google auth failed")
-        self.set_secure_cookie("user", tornado.escape.json_encode(user))
+            raise anzu.web.HTTPError(500, "Google auth failed")
+        self.set_secure_cookie("user", anzu.escape.json_encode(user))
         self.redirect("/")
 
 
@@ -146,10 +146,10 @@ class AuthLogoutHandler(BaseHandler):
 
 
 def main():
-    tornado.options.parse_command_line()
-    http_server = tornado.httpserver.HTTPServer(Application())
+    anzu.options.parse_command_line()
+    http_server = anzu.httpserver.HTTPServer(Application())
     http_server.listen(options.port)
-    tornado.ioloop.IOLoop.instance().start()
+    anzu.ioloop.IOLoop.instance().start()
 
 
 if __name__ == "__main__":

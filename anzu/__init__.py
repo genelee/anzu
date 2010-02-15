@@ -14,4 +14,4 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-"""The Tornado web server and tools."""
+"""The Anzu web server and tools."""

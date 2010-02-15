@@ -15,32 +15,32 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-"""The Tornado web framework.
+"""The Anzu web framework.
 
-The Tornado web framework looks a bit like web.py (http://webpy.org/) or
+The Anzu web framework looks a bit like web.py (http://webpy.org/) or
 Google's webapp (http://code.google.com/appengine/docs/python/tools/webapp/),
 but with additional tools and optimizations to take advantage of the
-Tornado non-blocking web server and tools.
+Anzu non-blocking web server and tools.
 
 Here is the canonical "Hello, world" example app:
 
-    import tornado.httpserver
-    import tornado.ioloop
-    import tornado.web
+    import anzu.httpserver
+    import anzu.ioloop
+    import anzu.web
 
-    class MainHandler(tornado.web.RequestHandler):
+    class MainHandler(anzu.web.RequestHandler):
         def get(self):
             self.write("Hello, world")
 
     if __name__ == "__main__":
-        application = tornado.web.Application([
+        application = anzu.web.Application([
             (r"/", MainHandler),
         ])
-        http_server = tornado.httpserver.HTTPServer(application)
+        http_server = anzu.httpserver.HTTPServer(application)
         http_server.listen(8888)
-        tornado.ioloop.IOLoop.instance().start()
+        anzu.ioloop.IOLoop.instance().start()
 
-See the Tornado walkthrough on GitHub for more details and a good
+See the Anzu walkthrough on GitHub for more details and a good
 getting started guide.
 """
 
@@ -155,7 +155,7 @@ class RequestHandler(object):
     def clear(self):
         """Resets all headers and content for this response."""
         self._headers = {
-            "Server": "TornadoServer/0.2",
+            "Server": "Anzu/0.2",
             "Content-Type": "text/html; charset=UTF-8",
         }
         if not self.request.supports_http_1_1():
@@ -295,11 +295,11 @@ class RequestHandler(object):
     def get_secure_cookie(self, name, include_name=True, value=None):
         """Returns the given signed cookie if it validates, or None.
 
-        In older versions of Tornado (0.1 and 0.2), we did not include the
+        In older versions of Anzu (0.1 and 0.2), we did not include the
         name of the cookie in the cookie signature. To read these old-style
         cookies, pass include_name=False to this method. Otherwise, all
         attempts to read old-style cookies will fail (and you may log all
-        your users out whose cookies were written with a previous Tornado
+        your users out whose cookies were written with a previous Anzu
         version).
         """
         if value is None: value = self.get_cookie(name)
@@ -636,7 +636,7 @@ class RequestHandler(object):
 
         By default, we use the 'login_url' application setting.
         """
-        self.require_setting("login_url", "@tornado.web.authenticated")
+        self.require_setting("login_url", "@anzu.web.authenticated")
         return self.application.settings["login_url"]
 
     @property
@@ -1003,13 +1003,13 @@ class Application(object):
             logging.info("Sessions are globally deactivated because session_storage has not been configured")
         elif settings.get('session_storage').startswith('file'):
             session_file = tempfile.NamedTemporaryFile(
-                prefix='tornado_sessions_', delete=False)
+                prefix='anzu_sessions_', delete=False)
             settings['session_storage'] = 'file://'+session_file.name
         elif settings.get('session_storage').startswith('dir'):
             dir_path = settings['session_storage']
             if not os.path.isdir(dir_path[6:]):
                 settings['session_storage'] = 'dir://'+tempfile.mkdtemp(
-                    prefix='tornado_sessions')
+                    prefix='anzu_sessions')
         elif settings.get('session_storage').startswith('mysql'):
             # create a connection to MySQL 
             u, p, h, d = session.MySQLSession._parse_connection_details(
@@ -1032,8 +1032,8 @@ class Application(object):
                     settings['session_storage'])
                 conn = pymongo.Connection(host=h, port=p)
                 db = pymongo.database.Database(conn, d)
-                db.tornado_sessions.ensure_index('session_id', unique=True)
-                settings['_db'] = pymongo.collection.Collection(db, 'tornado_sessions')
+                db.anzu_sessions.ensure_index('session_id', unique=True)
+                settings['_db'] = pymongo.collection.Collection(db, 'anzu_sessions')
             except ImportError:
                 pass
         elif settings.get('session_storage').startswith('memcached'):
@@ -1296,12 +1296,12 @@ class FallbackHandler(RequestHandler):
     """A RequestHandler that wraps another HTTP server callback.
 
     The fallback is a callable object that accepts an HTTPRequest,
-    such as an Application or tornado.wsgi.WSGIContainer.  This is most
-    useful to use both tornado RequestHandlers and WSGI in the same server.
+    such as an Application or anzu.wsgi.WSGIContainer.  This is most
+    useful to use both anzu RequestHandlers and WSGI in the same server.
     Typical usage:
-        wsgi_app = tornado.wsgi.WSGIContainer(
+        wsgi_app = anzu.wsgi.WSGIContainer(
             django.core.handlers.wsgi.WSGIHandler())
-        application = tornado.web.Application([
+        application = anzu.web.Application([
             (r"/foo", FooHandler),
             (r".*", FallbackHandler, dict(fallback=wsgi_app),
         ])

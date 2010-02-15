@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
 """
-Sessions module for the Tornado framework.
+Sessions module for the Anzu framework.
 Milan Cermak <milan.cermak@gmail.com> 
 
-This module implements sessions for Tornado. So far, it can store
+This module implements sessions for Anzu. So far, it can store
 session data only in files or MySQL databse (Memcached and MongoDB
 based are planned for future versions).
 
@@ -69,12 +69,12 @@ session_storage: a string specifying the session storage;
                  each session is stored in a separate, single file; to
                  enable this behaviour, set this setting to:
                  dir://[/path/to/session/storage/directory]
-                 if you omit the directory path, Tornado will create
+                 if you omit the directory path, Anzu will create
                  a temporary directory for you
                  each session will be mapped to a file following the
                  <session_id>.session format, saved in this directory
 
-                 be sure the Tornado process has read & write access to
+                 be sure the Anzu process has read & write access to
                  this path, whether it's a file or a directory
 
                  if you want to use MySQL, set it in this format:
@@ -98,7 +98,7 @@ session_storage: a string specifying the session storage;
                  if you don't specify any storage, the default behaviour is
                  to create a new temporary file according to yours OS'
                  conventions (on Unix-like systems in the /tmp directory);
-                 the file will have 'tornado_sessions_' as name prefix
+                 the file will have 'anzu_sessions_' as name prefix
 
 session_security_model: not implemented yet;
                         the plan to future versions is to provide some basic
@@ -123,7 +123,7 @@ class BaseSession(collections.MutableMapping):
     """The base class for the session object. Work with the session object
     is really simple, just treat is as any other dictionary:
 
-    class Handler(tornado.web.RequestHandler):
+    class Handler(anzu.web.RequestHandler):
         def get(self):
             var = self.session['key']
             self.session['another_key'] = 'value'
@@ -300,7 +300,7 @@ class BaseSession(collections.MutableMapping):
 class FileSession(BaseSession):
     """File based session storage. Sessions are stored in CSV format. The file
     is either specified in the session_storage setting (be sure it is writable
-    to the Tornado process) or a new tempfile with 'tornado_sessions_' prefix
+    to the Anzu process) or a new tempfile with 'anzu_sessions_' prefix
     is created in the OS' standard location.
     
     Be aware that file-based sessions can get really slow with many stored
@@ -407,7 +407,7 @@ class DirSession(BaseSession):
     separate file, so one file represents one session. The files are
     named as the session_id plus '.session' suffix. Data is stored in
     CSV format. Make sure the directory where the files are stored is
-    readable and writtable to the Tornado process."""
+    readable and writtable to the Anzu process."""
     def __init__(self, dir_path, **kwargs):
         super(DirSession, self).__init__(**kwargs)
         self.dir_path = dir_path
@@ -471,12 +471,12 @@ class DirSession(BaseSession):
 
 
 class MySQLSession(BaseSession):
-    """Enables MySQL to act as a session storage engine. It uses Tornado's
+    """Enables MySQL to act as a session storage engine. It uses Anzu's
     MySQL wrapper from database.py.
 
     The connection details are specified in the session_storage settings
     as string mysql://username:password[@hostname[:port]]/database. It
-    stores session data in the table tornado_sessions. If hostname or
+    stores session data in the table anzu_sessions. If hostname or
     port aren't specified, localhost:3306 are used as defaults. """
 
     def __init__(self, connection, **kwargs):
@@ -508,14 +508,14 @@ class MySQLSession(BaseSession):
 
     def save(self):
         """Store the session data to database. Session is saved only if it
-        is necessary. If the table 'tornado_sessions' does not exist yet,
+        is necessary. If the table 'anzu_sessions' does not exist yet,
         create it. It uses MySQL's "non-standard insert ... on duplicate key
         "update query."""
         if not self.dirty:
             return
-        if not self.connection.get("""show tables like 'tornado_sessions'"""):
+        if not self.connection.get("""show tables like 'anzu_sessions'"""):
             self.connection.execute( # create table if it doesn't exist
-                """create table tornado_sessions (
+                """create table anzu_sessions (
                 session_id varchar(64) not null primary key,
                 data longtext,
                 expires integer,
@@ -524,7 +524,7 @@ class MySQLSession(BaseSession):
                 );""")
 
         self.connection.execute( # MySQL's upsert
-            """insert into tornado_sessions
+            """insert into anzu_sessions
             (session_id, data, expires, ip_address, user_agent) values
             (%s, %s, %s, %s, %s)
             on duplicate key update
@@ -540,7 +540,7 @@ class MySQLSession(BaseSession):
         try:
             data = connection.get("""
             select session_id, data, expires, ip_address, user_agent
-            from tornado_sessions where session_id = %s;""",  session_id)
+            from anzu_sessions where session_id = %s;""",  session_id)
             if data:
                 kwargs = MySQLSession.deserialize(data['data'])
                 return MySQLSession(connection, **kwargs)
@@ -551,12 +551,12 @@ class MySQLSession(BaseSession):
     def delete(self):
         """Remove session data from the database."""
         self.connection.execute("""
-        delete from tornado_sessions where session_id = %s;""", self.session_id)
+        delete from anzu_sessions where session_id = %s;""", self.session_id)
 
     @staticmethod
     def delete_expired(connection):
         connection.execute("""
-        delete from tornado_sessions where expires < %s;""", int(time.time()))
+        delete from anzu_sessions where expires < %s;""", int(time.time()))
 
 
 try:
@@ -644,7 +644,7 @@ try:
 
     class MongoDBSession(BaseSession):
         """Class implementing the MongoDB based session storage.
-        All sessions are stored in a collection "tornado_sessions" in the db
+        All sessions are stored in a collection "anzu_sessions" in the db
         you specify in the session_storage setting.
 
         The session document structure is following:
@@ -671,7 +671,7 @@ try:
             return match.group(1), match.group(2), match.group(3) # host, port, database
 
         def save(self):
-            """Upsert a document to the tornado_sessions collection.
+            """Upsert a document to the anzu_sessions collection.
             The document's structure is like so:
             {'session_id': self.session_id,
              'data': self.serialize(),

@@ -30,8 +30,8 @@ See the individual service classes below for complete documentation.
 
 Example usage for Google OpenID:
 
-class GoogleHandler(tornado.web.RequestHandler, tornado.auth.GoogleMixin):
-    @tornado.web.asynchronous
+class GoogleHandler(anzu.web.RequestHandler, anzu.auth.GoogleMixin):
+    @anzu.web.asynchronous
     def get(self):
         if self.get_argument("openid.mode", None):
             self.get_authenticated_user(self.async_callback(self._on_auth))
@@ -40,7 +40,7 @@ class GoogleHandler(tornado.web.RequestHandler, tornado.auth.GoogleMixin):
     
     def _on_auth(self, user):
         if not user:
-            raise tornado.web.HTTPError(500, "Google auth failed")
+            raise anzu.web.HTTPError(500, "Google auth failed")
         # Save the user with, e.g., set_secure_cookie()
 
 """
@@ -343,9 +343,9 @@ class TwitterMixin(OAuthMixin):
     When your application is set up, you can use this Mixin like this
     to authenticate the user with Twitter and get access to their stream:
 
-    class TwitterHandler(tornado.web.RequestHandler,
-                         tornado.auth.TwitterMixin):
-        @tornado.web.asynchronous
+    class TwitterHandler(anzu.web.RequestHandler,
+                         anzu.auth.TwitterMixin):
+        @anzu.web.asynchronous
         def get(self):
             if self.get_argument("oauth_token", None):
                 self.get_authenticated_user(self.async_callback(self._on_auth))
@@ -354,7 +354,7 @@ class TwitterMixin(OAuthMixin):
     
         def _on_auth(self, user):
             if not user:
-                raise tornado.web.HTTPError(500, "Twitter auth failed")
+                raise anzu.web.HTTPError(500, "Twitter auth failed")
             # Save the user using, e.g., set_secure_cookie()
 
     The user object returned by get_authenticated_user() includes the
@@ -400,14 +400,14 @@ class TwitterMixin(OAuthMixin):
         attribute that can be used to make authenticated requests via
         this method. Example usage:
 
-        class MainHandler(tornado.web.RequestHandler,
-                          tornado.auth.TwitterMixin):
-            @tornado.web.authenticated
-            @tornado.web.asynchronous
+        class MainHandler(anzu.web.RequestHandler,
+                          anzu.auth.TwitterMixin):
+            @anzu.web.authenticated
+            @anzu.web.asynchronous
             def get(self):
                 self.twitter_request(
                     "/statuses/update",
-                    post_args={"status": "Testing Tornado Web Server"},
+                    post_args={"status": "Testing Anzu Web Server"},
                     access_token=user["access_token"],
                     callback=self.async_callback(self._on_post))
 
@@ -479,9 +479,9 @@ class FriendFeedMixin(OAuthMixin):
     When your application is set up, you can use this Mixin like this
     to authenticate the user with FriendFeed and get access to their feed:
 
-    class FriendFeedHandler(tornado.web.RequestHandler,
-                            tornado.auth.FriendFeedMixin):
-        @tornado.web.asynchronous
+    class FriendFeedHandler(anzu.web.RequestHandler,
+                            anzu.auth.FriendFeedMixin):
+        @anzu.web.asynchronous
         def get(self):
             if self.get_argument("oauth_token", None):
                 self.get_authenticated_user(self.async_callback(self._on_auth))
@@ -490,7 +490,7 @@ class FriendFeedMixin(OAuthMixin):
     
         def _on_auth(self, user):
             if not user:
-                raise tornado.web.HTTPError(500, "FriendFeed auth failed")
+                raise anzu.web.HTTPError(500, "FriendFeed auth failed")
             # Save the user using, e.g., set_secure_cookie()
 
     The user object returned by get_authenticated_user() includes the
@@ -520,14 +520,14 @@ class FriendFeedMixin(OAuthMixin):
         attribute that can be used to make authenticated requests via
         this method. Example usage:
 
-        class MainHandler(tornado.web.RequestHandler,
-                          tornado.auth.FriendFeedMixin):
-            @tornado.web.authenticated
-            @tornado.web.asynchronous
+        class MainHandler(anzu.web.RequestHandler,
+                          anzu.auth.FriendFeedMixin):
+            @anzu.web.authenticated
+            @anzu.web.asynchronous
             def get(self):
                 self.friendfeed_request(
                     "/entry",
-                    post_args={"body": "Testing Tornado Web Server"},
+                    post_args={"body": "Testing Anzu Web Server"},
                     access_token=self.current_user["access_token"],
                     callback=self.async_callback(self._on_post))
 
@@ -597,8 +597,8 @@ class GoogleMixin(OpenIdMixin, OAuthMixin):
     values for the user, including 'email', 'name', and 'locale'.
     Example usage:
 
-    class GoogleHandler(tornado.web.RequestHandler, tornado.auth.GoogleMixin):
-       @tornado.web.asynchronous
+    class GoogleHandler(anzu.web.RequestHandler, anzu.auth.GoogleMixin):
+       @anzu.web.asynchronous
        def get(self):
            if self.get_argument("openid.mode", None):
                self.get_authenticated_user(self.async_callback(self._on_auth))
@@ -607,7 +607,7 @@ class GoogleMixin(OpenIdMixin, OAuthMixin):
     
         def _on_auth(self, user):
             if not user:
-                raise tornado.web.HTTPError(500, "Google auth failed")
+                raise anzu.web.HTTPError(500, "Google auth failed")
             # Save the user with, e.g., set_secure_cookie()
 
     """
@@ -672,9 +672,9 @@ class FacebookMixin(object):
     When your application is set up, you can use this Mixin like this
     to authenticate the user with Facebook:
 
-    class FacebookHandler(tornado.web.RequestHandler,
-                          tornado.auth.FacebookMixin):
-        @tornado.web.asynchronous
+    class FacebookHandler(anzu.web.RequestHandler,
+                          anzu.auth.FacebookMixin):
+        @anzu.web.asynchronous
         def get(self):
             if self.get_argument("session", None):
                 self.get_authenticated_user(self.async_callback(self._on_auth))
@@ -683,7 +683,7 @@ class FacebookMixin(object):
     
         def _on_auth(self, user):
             if not user:
-                raise tornado.web.HTTPError(500, "Facebook auth failed")
+                raise anzu.web.HTTPError(500, "Facebook auth failed")
             # Save the user using, e.g., set_secure_cookie()
 
     The user object returned by get_authenticated_user() includes the
@@ -766,10 +766,10 @@ class FacebookMixin(object):
 
         Here is an example for the stream.get() method:
 
-        class MainHandler(tornado.web.RequestHandler,
-                          tornado.auth.FacebookMixin):
-            @tornado.web.authenticated
-            @tornado.web.asynchronous
+        class MainHandler(anzu.web.RequestHandler,
+                          anzu.auth.FacebookMixin):
+            @anzu.web.authenticated
+            @anzu.web.asynchronous
             def get(self):
                 self.facebook_request(
                     method="stream.get",

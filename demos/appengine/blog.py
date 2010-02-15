@@ -18,8 +18,8 @@ import functools
 import markdown
 import os.path
 import re
-import tornado.web
-import tornado.wsgi
+import anzu.web
+import anzu.wsgi
 import unicodedata
 import wsgiref.handlers
 
@@ -46,18 +46,18 @@ def administrator(method):
             if self.request.method == "GET":
                 self.redirect(self.get_login_url())
                 return
-            raise tornado.web.HTTPError(403)
+            raise anzu.web.HTTPError(403)
         elif not self.current_user.administrator:
             if self.request.method == "GET":
                 self.redirect("/")
                 return
-            raise tornado.web.HTTPError(403)
+            raise anzu.web.HTTPError(403)
         else:
             return method(self, *args, **kwargs)
     return wrapper
 
 
-class BaseHandler(tornado.web.RequestHandler):
+class BaseHandler(anzu.web.RequestHandler):
     """Implements Google Accounts authentication methods."""
     def get_current_user(self):
         user = users.get_current_user()
@@ -69,7 +69,7 @@ class BaseHandler(tornado.web.RequestHandler):
 
     def render_string(self, template_name, **kwargs):
         # Let the templates access the users module to generate login URLs
-        return tornado.web.RequestHandler.render_string(
+        return anzu.web.RequestHandler.render_string(
             self, template_name, users=users, **kwargs)
 
 
@@ -86,7 +86,7 @@ class HomeHandler(BaseHandler):
 class EntryHandler(BaseHandler):
     def get(self, slug):
         entry = db.Query(Entry).filter("slug =", slug).get()
-        if not entry: raise tornado.web.HTTPError(404)
+        if not entry: raise anzu.web.HTTPError(404)
         self.render("entry.html", entry=entry)
 
 
@@ -141,7 +141,7 @@ class ComposeHandler(BaseHandler):
         self.redirect("/entry/" + entry.slug)
 
 
-class EntryModule(tornado.web.UIModule):
+class EntryModule(anzu.web.UIModule):
     def render(self, entry):
         return self.render_string("modules/entry.html", entry=entry)
 
@@ -152,7 +152,7 @@ settings = {
     "ui_modules": {"Entry": EntryModule},
     "xsrf_cookies": True,
 }
-application = tornado.wsgi.WSGIApplication([
+application = anzu.wsgi.WSGIApplication([
     (r"/", HomeHandler),
     (r"/archive", ArchiveHandler),
     (r"/feed", FeedHandler),

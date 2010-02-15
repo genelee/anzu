@@ -14,7 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-"""WSGI support for the Tornado web framework.
+"""WSGI support for the Anzu web framework.
 
 We export WSGIApplication, which is very similar to web.Application, except
 no asynchronous methods are supported (since WSGI does not support
@@ -24,29 +24,29 @@ we throw an exception.
 
 Example usage:
 
-    import tornado.web
-    import tornado.wsgi
+    import anzu.web
+    import anzu.wsgi
     import wsgiref.simple_server
 
-    class MainHandler(tornado.web.RequestHandler):
+    class MainHandler(anzu.web.RequestHandler):
         def get(self):
             self.write("Hello, world")
 
     if __name__ == "__main__":
-        application = tornado.wsgi.WSGIApplication([
+        application = anzu.wsgi.WSGIApplication([
             (r"/", MainHandler),
         ])
         server = wsgiref.simple_server.make_server('', 8888, application)
         server.serve_forever()
 
 See the 'appengine' demo for an example of using this module to run
-a Tornado app on Google AppEngine.
+a Anzu app on Google AppEngine.
 
 Since no asynchronous methods are available for WSGI applications, the
 httpclient and auth modules are both not available for WSGI applications.
 
 We also export WSGIContainer, which lets you run other WSGI-compatible
-frameworks on the Tornado HTTP server and I/O loop. See WSGIContainer for
+frameworks on the Anzu HTTP server and I/O loop. See WSGIContainer for
 details and documentation.
 """
 
@@ -185,7 +185,7 @@ class HTTPRequest(object):
 
 
 class WSGIContainer(object):
-    """Makes a WSGI-compatible function runnable on Tornado's HTTP server.
+    """Makes a WSGI-compatible function runnable on Anzu's HTTP server.
 
     Wrap a WSGI function in a WSGIContainer and pass it to HTTPServer to
     run it. For example:
@@ -196,13 +196,13 @@ class WSGIContainer(object):
             start_response(status, response_headers)
             return ["Hello world!\n"]
 
-        container = tornado.wsgi.WSGIContainer(simple_app)
-        http_server = tornado.httpserver.HTTPServer(container)
+        container = anzu.wsgi.WSGIContainer(simple_app)
+        http_server = anzu.httpserver.HTTPServer(container)
         http_server.listen(8888)
-        tornado.ioloop.IOLoop.instance().start()
+        anzu.ioloop.IOLoop.instance().start()
 
     This class is intended to let other frameworks (Django, web.py, etc)
-    run on the Tornado HTTP server and I/O loop. It has not yet been
+    run on the Anzu HTTP server and I/O loop. It has not yet been
     thoroughly tested in production.
     """
     def __init__(self, wsgi_application):
@@ -222,7 +222,7 @@ class WSGIContainer(object):
         body = escape.utf8(body)
         headers["Content-Length"] = str(len(body))
         headers.setdefault("Content-Type", "text/html; charset=UTF-8")
-        headers.setdefault("Server", "TornadoServer/0.2")
+        headers.setdefault("Server", "Anzu/0.2")
 
         parts = ["HTTP/1.1 " + data["status"] + "\r\n"]
         for key, value in headers.iteritems():

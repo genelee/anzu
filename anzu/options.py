@@ -18,7 +18,7 @@
 
 Each module defines its own options, e.g.,
 
-    from tornado.options import define, options
+    from anzu.options import define, options
 
     define("mysql_host", default="127.0.0.1:3306", help="Main user DB")
     define("memcache_hosts", default="127.0.0.1:11011", multiple=True,
@@ -33,9 +33,9 @@ the options used throughout your program; they are all automatically loaded
 when the modules are loaded. Your main() method can parse the command line
 or parse a config file with:
 
-    import tornado.options
-    tornado.options.parse_config_file("/etc/server.conf")
-    tornado.options.parse_command_line()
+    import anzu.options
+    anzu.options.parse_config_file("/etc/server.conf")
+    anzu.options.parse_command_line()
 
 Command line formats are what you would expect ("--myoption=myvalue").
 Config files are just Python files. Global names become options, e.g.,

@@ -77,7 +77,7 @@ class HTTPServer(object):
 
     If xheaders is True, we support the X-Real-Ip and X-Scheme headers,
     which override the remote IP and HTTP scheme for all requests. These
-    headers are useful when running Tornado behind a reverse proxy or
+    headers are useful when running Anzu behind a reverse proxy or
     load balancer.
 
     HTTPServer can serve HTTPS (SSL) traffic with Python 2.6+ and OpenSSL.
@@ -100,7 +100,7 @@ class HTTPServer(object):
         ioloop.IOLoop.instance().start()
 
     start() detects the number of CPUs on this machine and "pre-forks" that
-    number of child processes so that we have one Tornado process per CPU,
+    number of child processes so that we have one Anzu process per CPU,
     all with their own IOLoop. You can also pass in the specific number of
     child processes you want to run with if you want to override this
     auto-detection.

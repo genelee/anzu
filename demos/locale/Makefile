@@ -12,4 +12,4 @@ i18n:
 		${MESSAGES_POT}
 
 dep:
-	emerge -1n dev-python/tornado dev-python/babel dev-python/beaker
+	emerge -1n dev-python/anzu dev-python/babel dev-python/beaker
