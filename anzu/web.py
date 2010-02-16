@@ -50,7 +50,6 @@ import calendar
 import Cookie
 import cStringIO
 import datetime
-import database
 import email.utils
 import escape
 import functools
@@ -1041,10 +1040,14 @@ class Application(object):
                 settings['session_storage'] = 'dir://'+tempfile.mkdtemp(
                     prefix='anzu_sessions')
         elif settings.get('session_storage').startswith('mysql'):
-            # create a connection to MySQL
-            u, p, h, d = session.MySQLSession._parse_connection_details(
-                settings['session_storage'])
-            settings['_db'] = database.Connection(h, d, user=u, password=p)
+            try:
+                import database
+                # create a connection to MySQL
+                u, p, h, d = session.MySQLSession._parse_connection_details(
+                    settings['session_storage'])
+                settings['_db'] = database.Connection(h, d, user=u, password=p)
+            except ImportError:
+                pass
         elif settings.get('session_storage').startswith('redis'):
             try:
                 import redis
