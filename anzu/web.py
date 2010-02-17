@@ -72,6 +72,7 @@ import time
 import types
 import urllib
 import urlparse
+import util
 import uuid
 
 from mako.template import Template
@@ -743,10 +744,9 @@ class RequestHandler(object):
         hashes = RequestHandler._static_hashes
         if path not in hashes:
             try:
-                def baseN(num,b): return "0" if num == 0 else ( baseN(num // b, b).lstrip("0") + "0123456789abcdefghijklmnopqrstuvwxyz"[num % b])
                 hash = murmur.file_hash(os.path.join(
                     self.application.settings["static_path"], path))
-                hashes[path] = baseN(hash, 36)
+                hashes[path] = util.baseN(hash, 36)
             except:
                 logging.error("Could not open static file %r", path)
                 hashes[path] = None
