@@ -3,6 +3,7 @@
 # Copyright 2010 W-Mark Kubacki
 #
 
+import anzu.escape
 import anzu.httpserver
 import anzu.ioloop
 import anzu.options
@@ -20,7 +21,7 @@ class MainHandler(anzu.web.RequestHandler):
             message = '<font color="red">' + self.error_for('email') + '</font><br />'
         else:
             message = 'Please give us your email.'
-        old_value = self.get_argument("email", '')
+        old_value = anzu.escape.xhtml_escape(self.get_argument("email", ''))
         self.write(
             message 
             + '<form method="post">Email: <input type="text" name="email" value="' 
