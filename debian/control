@@ -8,7 +8,7 @@ Standards-Version: 3.7.2
 Package: python-tornado
 Architecture: any
 Depends: ${python:Depends}, python-pkg-resources, python-pycurl
-Recommends: python-simplejson
+Recommends: 
 Suggests: 
 Provides: ${python:Provides}
 Description: Tornado is an open source version of the scalable, non-blocking web server
