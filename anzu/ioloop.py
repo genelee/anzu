@@ -285,7 +285,7 @@ class IOLoop(object):
                 fd, events = self._events.popitem()
                 try:
                     self._handlers[fd](fd, events)
-                except KeyboardInterrupt:
+                except (KeyboardInterrupt, SystemExit):
                     raise
                 except (OSError, IOError), e:
                     if e[0] == errno.EPIPE:
@@ -398,6 +398,8 @@ class PeriodicCallback(object):
         if not self._running: return
         try:
             self.callback()
+        except (KeyboardInterrupt, SystemExit):
+            raise
         except:
             logging.error("Error in periodic callback", exc_info=True)
         self.start()
