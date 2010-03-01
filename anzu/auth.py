@@ -704,6 +704,7 @@ class FacebookMixin(object):
             "display": "page",
             "next": urlparse.urljoin(self.request.full_url(), callback_uri),
             "return_session": "true",
+            "req_perms": "",
         }
         if cancel_uri:
             args["cancel_url"] = urlparse.urljoin(
