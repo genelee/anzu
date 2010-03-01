@@ -1,11 +1,5 @@
-tornado (0.2-2) unstable; urgency=low
+anzu (0.2-1) unstable; urgency=low
 
-  * Version bump.
+  * Initial version.
 
- -- Alexander Saltanov <a@nearbird.ru>  Fri, 26 Feb 2010 10:49:13 +0100
-
-tornado (0.2-1) unstable; urgency=low
-
-  * Plain debianization.
-
- -- Alexander Saltanov <a@nearbird.ru>  Thu, 11 Feb 2010 19:20:25 +0100
+ -- W-Mark Kubacki <wmark@hurrikane.de>  Mon, 01 Mar 2010 20:06:00 +0100

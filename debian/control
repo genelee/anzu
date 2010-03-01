@@ -1,18 +1,19 @@
-Source: tornado
-Maintainer: Facebook <python-tornado@googlegroups.com>
+Source: anzu
+Maintainer: W-Mark Kubacki <wmark+anzu@hurrikane.de>
 Section: python
 Priority: optional
 Build-Depends: cdbs (>= 0.4.49), python-setuptools (>= 0.6b3), debhelper (>= 7), python-support (>= 0.8.4)
 Standards-Version: 3.7.2
 
-Package: python-tornado
+Package: python-anzu
 Architecture: any
 Depends: ${python:Depends}, python-pkg-resources, python-pycurl
 Recommends: 
 Suggests: 
 Provides: ${python:Provides}
-Description: Tornado is an open source version of the scalable, non-blocking web server
- and and tools that power FriendFeed. Documentation and downloads are
- available at http://www.tornadoweb.org/
+Description: Anzu is a lightweight web application development framework 
+ with Mako templating, gettext i18n, validators and sessions based on 
+ Facebook's Tornado. Documentation and downloads are
+ available at http://github.com/wmark/anzu
  .
 
