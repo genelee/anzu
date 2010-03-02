@@ -369,7 +369,7 @@ define("help", type=bool, help="show this help information")
 define("mako_module_directory",
        help="used by Mako for storing compiled templates")
 define("logging", default="info",
-       help=("Set the Python log level. If 'none', tornado won't touch the "
+       help=("Set the Python log level. If 'none', Anzu won't touch the "
              "logging configuration."),
        metavar="info|warning|error|none")
 define("log_to_stderr", type=bool, default=None,
@@ -377,7 +377,7 @@ define("log_to_stderr", type=bool, default=None,
              "By default use stderr if --log_file_prefix is not set."))
 define("log_file_prefix", type=str, default=None, metavar="PATH",
        help=("Path prefix for log files. "
-             "Note that if you are running multiple tornado processes, "
+             "Note that if you are running multiple Anzu processes, "
              "log_file_prefix must be different for each of them (e.g. "
              "include the port number)"))
 define("log_file_max_size", type=int, default=100 * 1000 * 1000,
