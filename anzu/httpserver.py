@@ -189,17 +189,19 @@ class HTTPServer(object):
             logging.info("Pre-forking %d server processes", num_processes)
             for i in range(num_processes):
                 if os.fork() == 0:
+                    self.io_loop = ioloop.IOLoop.instance()
                     for f in self._socket:
-                        ioloop.IOLoop.instance().add_handler(
+                        self.io_loop.add_handler(
                             f, self._handle_events,
                             ioloop.IOLoop.READ)
                     return
             os.waitpid(-1, 0)
         else:
-            io_loop = self.io_loop or ioloop.IOLoop.instance()
+            if not self.io_loop:
+                self.io_loop = ioloop.IOLoop.instance()
             for f in self._socket:
-                io_loop.add_handler(f, self._handle_events,
-                                    ioloop.IOLoop.READ)
+                self.io_loop.add_handler(f, self._handle_events,
+                                         ioloop.IOLoop.READ)
 
     def stop(self):
       for s in self._socket:
@@ -265,7 +267,7 @@ class HTTPConnection(object):
             connection_header = self._request.headers.get("Connection")
             if self._request.supports_http_1_1():
                 disconnect = connection_header == "close"
-            elif ("Content-Length" in self._request.headers 
+            elif ("Content-Length" in self._request.headers
                     or self._request.method in ("HEAD", "GET")):
                 disconnect = connection_header != "Keep-Alive"
             else:
