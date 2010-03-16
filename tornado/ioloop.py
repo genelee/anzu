@@ -184,7 +184,7 @@ class IOLoop(object):
             try:
                 event_pairs = self._impl.poll(poll_timeout)
             except Exception, e:
-                if e.errno == errno.EINTR:
+                if e[0] == errno.EINTR:
                     logging.warning("Interrupted system call", exc_info=1)
                     continue
                 else:
