@@ -124,6 +124,17 @@ class AsyncHTTPClient(object):
             cls._ASYNC_CLIENTS[io_loop] = instance
             return instance
 
+    def close(self):
+        """Destroys this http client, freeing any file descriptors used.
+        Not needed in normal use, but may be helpful in unittests that
+        create and destroy http clients.  No other methods may be called
+        on the AsyncHTTPClient after close().
+        """
+        del AsyncHTTPClient._ASYNC_CLIENTS[self.io_loop]
+        for curl in self._curls:
+            curl.close()
+        self._multi.close()
+
     def fetch(self, request, callback, **kwargs):
         """Executes an HTTPRequest, calling callback with an HTTPResponse.
 
@@ -421,7 +432,12 @@ def _curl_header_callback(headers, header_line):
     if len(parts) != 2:
         logging.warning("Invalid HTTP response header line %r", header_line)
         return
-    headers[parts[0].strip()] = parts[1].strip()
+    name = parts[0].strip()
+    value = parts[1].strip()
+    if name in headers:
+        headers[name] = headers[name] + ',' + value
+    else:
+        headers[name] = value
 
 
 def _curl_debug(debug_type, debug_msg):
