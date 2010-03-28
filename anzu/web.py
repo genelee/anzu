@@ -77,6 +77,7 @@ import uuid
 from mako.template import Template
 from mako.lookup import TemplateLookup
 
+_log = logging.getLogger('anzu.web')
 
 class RequestHandler(object):
     """Subclass this class and define get() or post() to make a handler.
@@ -233,7 +234,7 @@ class RequestHandler(object):
            and name in self.request.input_values:
             return self.request.input_values[name]
         elif name in self.request.arguments:
-            logging.warning("Acces to unvalidated argument %s. "
+            _log.warning("Acces to unvalidated argument %s. "
                             "Please consider using validators!",
                             name)
             if len(self.request.arguments[name]) > 1:
@@ -339,11 +340,11 @@ class RequestHandler(object):
         else:
             signature = self._cookie_signature(parts[0], parts[1])
         if not _time_independent_equals(parts[2], signature):
-            logging.warning("Invalid cookie signature %r", value)
+            _log.warning("Invalid cookie signature %r", value)
             return None
         timestamp = int(parts[1])
         if timestamp < time.time() - 31 * 86400:
-            logging.warning("Expired cookie %r", value)
+            _log.warning("Expired cookie %r", value)
             return None
         try:
             return base64.b64decode(parts[0])
@@ -533,7 +534,8 @@ class RequestHandler(object):
         # Automatically support ETags and add the Content-Length header if
         # we have not flushed any content yet.
         if not self._headers_written:
-            if self._status_code == 200 and self.request.method == "GET":
+            if (self._status_code == 200 and self.request.method == "GET" and
+                "Etag" not in self._headers):
                 hasher = hashlib.sha1()
                 for part in self._write_buffer:
                     hasher.update(part)
@@ -574,7 +576,7 @@ class RequestHandler(object):
         for your application.
         """
         if self._headers_written:
-            logging.error("Cannot send error response after headers written")
+            _log.error("Cannot send error response after headers written")
             if not self._finished:
                 self.finish()
             return
@@ -747,7 +749,7 @@ class RequestHandler(object):
                     self.application.settings["static_path"], path))
                 hashes[path] = util.baseN(hash, 36)
             except:
-                logging.error("Could not open static file %r", path)
+                _log.error("Could not open static file %r", path)
                 hashes[path] = None
         base = self.request.protocol + "://" + self.request.host \
             if getattr(self, "include_host", False) else ""
@@ -771,7 +773,7 @@ class RequestHandler(object):
                 return callback(*args, **kwargs)
             except Exception, e:
                 if self._headers_written:
-                    logging.error("Exception after headers written",
+                    _log.error("Exception after headers written",
                                   exc_info=True)
                 else:
                     self._handle_request_exception(e)
@@ -816,11 +818,11 @@ class RequestHandler(object):
 
     def _log(self):
         if self._status_code < 400:
-            log_method = logging.info
+            log_method = _log.info
         elif self._status_code < 500:
-            log_method = logging.warning
+            log_method = _log.warning
         else:
-            log_method = logging.error
+            log_method = _log.error
         request_time = 1000.0 * self.request.request_time()
         log_method("%d %s %.2fms", self._status_code,
                    self._request_summary(), request_time)
@@ -834,14 +836,14 @@ class RequestHandler(object):
             if e.log_message:
                 format = "%d %s: " + e.log_message
                 args = [e.status_code, self._request_summary()] + list(e.args)
-                logging.warning(format, *args)
+                _log.warning(format, *args)
             if e.status_code not in httplib.responses:
-                logging.error("Bad HTTP status code: %d", e.status_code)
+                _log.error("Bad HTTP status code: %d", e.status_code)
                 self.send_error(500, exception=e)
             else:
                 self.send_error(e.status_code, exception=e)
         else:
-            logging.error("Uncaught exception %s\n%r", self._request_summary(),
+            _log.error("Uncaught exception %s\n%r", self._request_summary(),
                           self.request, exc_info=e)
             self.send_error(500, exception=e)
 
@@ -1029,7 +1031,7 @@ class Application(object):
         else:
             self.transforms = transforms
         if not settings.get('session_storage'):
-            logging.info("Sessions are globally deactivated because session_storage has not been configured")
+            _log.info("Sessions are globally deactivated because session_storage has not been configured")
         elif settings.get('session_storage').startswith('file'):
             session_file = tempfile.NamedTemporaryFile(
                 prefix='anzu_sessions_', delete=False)
@@ -1113,7 +1115,15 @@ class Application(object):
         if not host_pattern.endswith("$"):
             host_pattern += "$"
         handlers = []
-        self.handlers.append((re.compile(host_pattern), handlers))
+        # The handlers with the wildcard host_pattern are a special
+        # case - they're added in the constructor but should have lower
+        # precedence than the more-precise handlers added later.
+        # If a wildcard handler group exists, it should always be last
+        # in the list, so insert new groups just before it.
+        if self.handlers and self.handlers[-1][0].pattern == '.*$':
+            self.handlers.insert(-1, (re.compile(host_pattern), handlers))
+        else:
+            self.handlers.append((re.compile(host_pattern), handlers))
 
         for spec in host_handlers:
             if type(spec) is type(()):
@@ -1177,6 +1187,7 @@ class Application(object):
         transforms = [t(request) for t in self.transforms]
         handler = None
         args = []
+        kwargs = {}
         handlers = self._get_host_handlers(request)
         if not handlers and not self.trivial_handlers:
             handler = RedirectHandler(
@@ -1189,7 +1200,14 @@ class Application(object):
                     match = spec.regex.match(request.path)
                     if match:
                         handler = spec.handler_class(self, request, **spec.kwargs)
-                        args = match.groups()
+                        # Pass matched groups to the handler.  Since
+                        # match.groups() includes both named and unnamed groups,
+                        # we want to use either groups or groupdict but not both.
+                        kwargs = match.groupdict()
+                        if kwargs:
+                            args = []
+                        else:
+                            args = match.groups()
                         break
             if not handler:
                 handler = ErrorHandler(self, request, 404)
@@ -1197,10 +1215,12 @@ class Application(object):
         # In debug mode, re-compile templates and reload static files on every
         # request so you don't need to restart to see changes
         if self.settings.get("debug"):
-            RequestHandler._templates = None
+            if getattr(RequestHandler, "_templates", None):
+              map(lambda loader: loader.reset(),
+                  RequestHandler._templates.values())
             RequestHandler._static_hashes = {}
 
-        handler._execute(transforms, *args)
+        handler._execute(transforms, *args, **kwargs)
         return handler
 
     def reverse_url(self, name, *args):
@@ -1318,7 +1338,7 @@ class StaticFileHandler(RequestHandler):
         if not include_body:
             return
         self.set_header("Content-Length", stat_result[stat.ST_SIZE])
-        file = open(abspath, "r")
+        file = open(abspath, "rb")
         try:
             self.write(file.read())
         finally:

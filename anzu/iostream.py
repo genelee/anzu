@@ -23,6 +23,8 @@ import socket
 
 from cStringIO import StringIO
 
+_log = logging.getLogger('anzu.iostream')
+
 class IOStream(object):
     """A utility class to write to and read from a non-blocking socket.
 
@@ -152,7 +154,7 @@ class IOStream(object):
 
     def _handle_events(self, fd, events):
         if not self.socket:
-            logging.warning("Got events for closed stream %d", fd)
+            _log.warning("Got events for closed stream %d", fd)
             return
         if events & self.io_loop.READ:
             self._handle_read()
@@ -181,7 +183,7 @@ class IOStream(object):
             if e[0] in (errno.EWOULDBLOCK, errno.EAGAIN):
                 return
             else:
-                logging.warning("Read error on %d: %s",
+                _log.warning("Read error on %d: %s",
                                 self.socket.fileno(), e)
                 self.close()
                 return
@@ -193,7 +195,7 @@ class IOStream(object):
 
         self._read_buffer.write(chunk)
         if self._read_buffer.tell() >= self.max_buffer_size:
-            logging.error("Reached maximum read buffer size")
+            _log.error("Reached maximum read buffer size")
             self.close()
             return
         if self._read_checker and self._read_checker(self._read_buffer, self._last_chunk):
@@ -226,7 +228,7 @@ class IOStream(object):
                 if e[0] in (errno.EWOULDBLOCK, errno.EAGAIN):
                     break
                 else:
-                    logging.warning("Write error on %d: %s",
+                    _log.warning("Write error on %d: %s",
                                     self.socket.fileno(), e)
                     self.close()
                     return

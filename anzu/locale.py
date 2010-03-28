@@ -50,6 +50,7 @@ _default_locale = "en_US"
 _translations = {}
 _supported_locales = frozenset([_default_locale])
 
+_log = logging.getLogger('anzu.locale')
 
 def get(*locale_codes):
     """Returns the closest match for the given locale codes.
@@ -108,11 +109,11 @@ def load_translations(directory, domain="cyclone"):
             os.stat(os.path.join(directory, lang, "LC_MESSAGES", domain+".mo"))
             _translations[lang] = gettext.translation(domain, directory, languages=[lang])
         except Exception, e:
-            logging.error("Cannot load translation for '%s': %s", lang, str(e))
+            _log.error("Cannot load translation for '%s': %s", lang, str(e))
             continue
 
     _supported_locales = frozenset(_translations.keys() + [_default_locale])
-    logging.info("Supported locales: %s", sorted(_supported_locales))
+    _log.info("Supported locales: %s", sorted(_supported_locales))
 
 
 def get_supported_locales():

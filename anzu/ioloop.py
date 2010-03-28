@@ -19,96 +19,20 @@
 import bisect
 import errno
 import os
-try:
-    import fcntl
-except ImportError:
-    if os.name != 'posix':
-        import socket
-    else:
-        raise
 import logging
 import select
 import time
 
+try:
+    import fcntl
+except ImportError:
+    if os.name == 'nt':
+        import win32_support
+        import win32_support as fcntl
+    else:
+        raise
 
-class Pipe(object):
-    """Create an OS independent asynchronous pipe"""
-    def __init__(self):
-        self.reader = None
-        self.writer = None
-        self.reader_fd = -1
-        if os.name == 'posix':
-            self.reader_fd, w = os.pipe()
-            self._set_posix_nonblocking(self.reader_fd)
-            self._set_posix_nonblocking(w)
-            self.reader = os.fdopen(self.reader_fd, "r", 0)
-            self.writer = os.fdopen(w, "w", 0)
-        else:
-            # Based on Zope async.py: http://svn.zope.org/zc.ngi/trunk/src/zc/ngi/async.py
-
-            self.writer = socket.socket()
-            # Disable buffering -- pulling the trigger sends 1 byte,
-            # and we want that sent immediately, to wake up asyncore's
-            # select() ASAP.
-            self.writer.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-
-            count = 0
-            while 1:
-                count += 1
-                # Bind to a local port; for efficiency, let the OS pick
-                # a free port for us.
-                # Unfortunately, stress tests showed that we may not
-                # be able to connect to that port ("Address already in
-                # use") despite that the OS picked it.  This appears
-                # to be a race bug in the Windows socket implementation.
-                # So we loop until a connect() succeeds (almost always
-                # on the first try).  See the long thread at
-                # http://mail.zope.org/pipermail/zope/2005-July/160433.html
-                # for hideous details.
-                a = socket.socket()
-                a.bind(("127.0.0.1", 0))
-                connect_address = a.getsockname()  # assigned (host, port) pair
-                a.listen(1)
-                try:
-                    self.writer.connect(connect_address)
-                    break    # success
-                except socket.error, detail:
-                    if detail[0] != errno.WSAEADDRINUSE:
-                        # "Address already in use" is the only error
-                        # I've seen on two WinXP Pro SP2 boxes, under
-                        # Pythons 2.3.5 and 2.4.1.
-                        raise
-                    # (10048, 'Address already in use')
-                    # assert count <= 2 # never triggered in Tim's tests
-                    if count >= 10:  # I've never seen it go above 2
-                        a.close()
-                        self.writer.close()
-                        raise BindError("Cannot bind trigger!")
-                    # Close `a` and try again.  Note:  I originally put a short
-                    # sleep() here, but it didn't appear to help or hurt.
-                    a.close()
-
-            self.reader, addr = a.accept()
-            self.reader.setblocking(0)
-            self.writer.setblocking(0)
-            a.close()
-            self.reader_fd = self.reader.fileno()
-
-    def _set_posix_nonblocking(self, fd):
-        flags = fcntl.fcntl(fd, fcntl.F_GETFL)
-        fcntl.fcntl(fd, fcntl.F_SETFL, flags | os.O_NONBLOCK)
-
-    def read(self):
-        try:
-            return self.reader.recv(1)
-        except socket.error, ex:
-            if ex.args[0] == errno.EWOULDBLOCK:
-                raise IOError
-            raise
-
-    def write(self, data):
-        return self.writer.send(data)
-
+_log = logging.getLogger("anzu.ioloop")
 
 class IOLoop(object):
     """A level-triggered I/O loop.
@@ -177,10 +101,13 @@ class IOLoop(object):
 
         # Create a pipe that we send bogus data to when we want to wake
         # the I/O loop when it is idle
-        if os.name != 'posix':
+        if os.name == 'nt':
+            self._waker_reader = self._waker_writer = win32_support.Pipe()
+            r = self._waker_writer.reader_fd
+        elif os.name != 'posix':
             trigger = Pipe()
             self._waker_reader = self._waker_writer = trigger
-            self.add_handler(trigger.reader_fd, self._read_waker, self.READ)
+            r = trigger.reader_fd
         else:
             r, w = os.pipe()
             self._set_nonblocking(r)
@@ -189,7 +116,7 @@ class IOLoop(object):
             self._set_close_exec(w)
             self._waker_reader = os.fdopen(r, "r", 0)
             self._waker_writer = os.fdopen(w, "w", 0)
-            self.add_handler(r, self._read_waker, self.READ)
+        self.add_handler(r, self._read_waker, self.READ)
 
     @classmethod
     def instance(cls):
@@ -231,7 +158,7 @@ class IOLoop(object):
         try:
             self._impl.unregister(fd)
         except (OSError, IOError):
-            logging.debug("Error deleting fd from IOLoop", exc_info=True)
+            _log.debug("Error deleting fd from IOLoop", exc_info=True)
 
     def start(self):
         """Starts the I/O loop.
@@ -275,7 +202,7 @@ class IOLoop(object):
                 event_pairs = self._impl.poll(poll_timeout)
             except Exception, e:
                 if e.errno == errno.EINTR:
-                    logging.warning("Interrupted system call", exc_info=1)
+                    _log.warning("Interrupted system call", exc_info=1)
                     continue
                 else:
                     raise
@@ -296,10 +223,10 @@ class IOLoop(object):
                         # Happens when the client closes the connection
                         pass
                     else:
-                        logging.error("Exception in I/O handler for fd %d",
+                        _log.error("Exception in I/O handler for fd %d",
                                       fd, exc_info=True)
                 except:
-                    logging.error("Exception in I/O handler for fd %d",
+                    _log.error("Exception in I/O handler for fd %d",
                                   fd, exc_info=True)
         # reset the stopped flag so another start/stop pair can be issued
         self._stopped = False
@@ -367,7 +294,7 @@ class IOLoop(object):
         The exception itself is not passed explicitly, but is available
         in sys.exc_info.
         """
-        logging.error("Exception in callback %r", callback, exc_info=True)
+        _log.error("Exception in callback %r", callback, exc_info=True)
 
     def _read_waker(self, fd, events):
         try:
@@ -387,6 +314,10 @@ class IOLoop(object):
 
 class _Timeout(object):
     """An IOLoop timeout, a UNIX timestamp and a callback"""
+
+    # Reduce memory overhead when there are lots of pending callbacks
+    __slots__ = ['deadline', 'callback']
+
     def __init__(self, deadline, callback):
         self.deadline = deadline
         self.callback = callback
@@ -421,7 +352,7 @@ class PeriodicCallback(object):
         except (KeyboardInterrupt, SystemExit):
             raise
         except:
-            logging.error("Error in periodic callback", exc_info=True)
+            _log.error("Error in periodic callback", exc_info=True)
         self.start()
 
 
@@ -552,5 +483,5 @@ else:
         # All other systems
         import sys
         if "linux" in sys.platform:
-            logging.warning("epoll module not found; using select()")
+            _log.warning("epoll module not found; using select()")
         _poll = _Select
