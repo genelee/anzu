@@ -8,14 +8,14 @@
   <body>
     <div id="body">
       <div style="float:right">
-	<b>${ current_user["name"] | h}</b> -
-	<a href="/auth/logout">${ _("Sign out") }</a>
+        <b>${ current_user["name"] | h}</b> -
+        <a href="/auth/logout">${ _("Sign out") }</a>
       </div>
       <div style="margin-bottom:1em"><a href="/">${ _("Refresh stream") }</a></div>
       <div id="stream">
-	% for post in stream["posts"]:
+        % for post in stream["posts"]:
           ${ modules.Post(post, stream["profiles"][post["actor_id"]]) }
-	% endfor
+        % endfor
       </div>
     </div>
   </body>
