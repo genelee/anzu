@@ -906,16 +906,6 @@ class RequestHandler(object):
                 old_session = session.RedisSession.load(session_id, settings['_db'])
                 if old_session is None or old_session._is_expired(): # create new session
                     new_session = session.RedisSession(settings['_db'], **kw)
-            elif url.startswith('dir'):
-                dir_path = url[6:]
-                old_session = session.DirSession.load(session_id, dir_path)
-                if old_session is None or old_session._is_expired(): # create new session
-                    new_session = session.DirSession(dir_path, **kw)
-            elif url.startswith('file'):
-                file_path = url[7:]
-                old_session = session.FileSession.load(session_id, file_path)
-                if old_session is None or old_session._is_expired(): # create new session
-                    new_session = session.FileSession(file_path, **kw)
 
         if old_session is not None:
             if old_session._should_regenerate():

@@ -2,7 +2,7 @@
 
 """
 Sessions module for the Anzu framework.
-Milan Cermak <milan.cermak@gmail.com> 
+Milan Cermak <milan.cermak@gmail.com>
 
 This module implements sessions for Anzu. So far, it can store
 session data only in files or MySQL databse (Memcached and MongoDB
@@ -13,7 +13,7 @@ Every session object can be handled as a dictionary:
     var = self.session[key]
 
 The session data is saved automatically for you when the request
-handler finishes. 
+handler finishes.
 
 Two utility functions, invalidate() and refresh() are available to
 every session object. Read their documentation to learn more.
@@ -61,22 +61,6 @@ session_storage: a string specifying the session storage;
                  MongoDB-based sessions (each session stored as a document
                  in MongoDB)
 
-                 if you want to store session data in a single file, set
-                 this to a url of the following format:
-                 'file:///path/to/session_storage_file'
-
-                 another choice is to store session in a directory, where
-                 each session is stored in a separate, single file; to
-                 enable this behaviour, set this setting to:
-                 dir://[/path/to/session/storage/directory]
-                 if you omit the directory path, Anzu will create
-                 a temporary directory for you
-                 each session will be mapped to a file following the
-                 <session_id>.session format, saved in this directory
-
-                 be sure the Anzu process has read & write access to
-                 this path, whether it's a file or a directory
-
                  if you want to use MySQL, set it in this format:
                  'mysql://username:password[@hostname[:port]]/database'
 
@@ -95,10 +79,7 @@ session_storage: a string specifying the session storage;
                  If no host or port is specified, defaults are used (localhost,
                  27017)
 
-                 if you don't specify any storage, the default behaviour is
-                 to create a new temporary file according to yours OS'
-                 conventions (on Unix-like systems in the /tmp directory);
-                 the file will have 'anzu_sessions_' as name prefix
+                 if you don't specify any storage, sessions will be disabled
 
 session_security_model: not implemented yet;
                         the plan to future versions is to provide some basic
@@ -108,15 +89,12 @@ session_security_model: not implemented yet;
 """
 
 import base64
-import csv
 import collections
 import datetime
 import os
 import cPickle as pickle
 import re
-import tempfile
 import time
-import types
 
 
 class BaseSession(collections.MutableMapping):
@@ -232,19 +210,19 @@ class BaseSession(collections.MutableMapping):
 
         return datetime.datetime.utcnow() + self.regeneration_interval
 
-    def invalidate(self): 
+    def invalidate(self):
         """Destorys the session, both server-side and client-side.
         As a best practice, it should be used when the user logs out of
         the application."""
         self.delete() # remove server-side
         self._delete_cookie = True # remove client-side
-    
+
     def refresh(self, duration=None, new_session_id=False): # the opposite of invalidate
         """Prolongs the session validity. You can specify for how long passing a
         value in the duration argument (the same rules as for session_age apply).
         Be aware that henceforward this particular session may have different
-        expiry date, not respecting the global setting. 
-        
+        expiry date, not respecting the global setting.
+
         If new_session_id is True, a new session identifier will be generated.
         This should be used e.g. on user authentication for security reasons."""
         if duration:
@@ -297,179 +275,6 @@ class BaseSession(collections.MutableMapping):
         return pickle.loads(base64.decodestring(datastring))
 
 
-class FileSession(BaseSession):
-    """File based session storage. Sessions are stored in CSV format. The file
-    is either specified in the session_storage setting (be sure it is writable
-    to the Anzu process) or a new tempfile with 'anzu_sessions_' prefix
-    is created in the OS' standard location.
-    
-    Be aware that file-based sessions can get really slow with many stored
-    session as any action (save, load, delete) has to cycle through the whole
-    file. """
-    def __init__(self, file_path, **kwargs):
-        super(FileSession, self).__init__(**kwargs)
-        self.file_path = file_path
-        if not kwargs.has_key('session_id'):
-            self.save() # save only if it is a newly created session, not if loaded from storage
-
-    def save(self):
-        """Save the session. To prevent data loss, we read from the original
-        file and write the updated data to a temporary file. When all data is
-        written, we rename the temporary file to the original. """
-        if not self.dirty:
-            return
-        found = False
-        reader_file = open(self.file_path, 'rb')
-        reader = csv.DictReader(reader_file,
-                                fieldnames=['session_id', 'data', 'expires', 'ip_address', 'user-agent'])
-        writer_temp = tempfile.mkstemp()[1]
-        writer_temp_file = open(writer_temp, 'w+b')
-        writer = csv.DictWriter(writer_temp_file,
-                                ['session_id', 'data', 'expires', 'ip_address', 'user-agent'])
-        for line in reader:
-            if line['session_id'] == self.session_id:
-                writer.writerow({'session_id': self.session_id,
-                                 'data': self.serialize(),
-                                 'expires': int(time.mktime(self.expires.timetuple())),
-                                 'ip_address': self.ip_address,
-                                 'user-agent': self.user_agent})
-                found = True
-            else:
-                writer.writerow(line)
-
-        if not found: # not previously stored session
-            # column data will contain the whole object, not just the
-            # data attribute
-            writer.writerow({'session_id': self.session_id,
-                             'data': self.serialize(),
-                             'expires': int(time.mktime(self.expires.timetuple())),
-                             'ip_address': self.ip_address,
-                             'user-agent': self.user_agent})
-        reader_file.close()
-        writer_temp_file.close()
-        os.rename(writer_temp, self.file_path)
-        self.dirty = False
-
-    @staticmethod
-    def load(session_id, path):
-        """Loads a session from the specified file."""
-        try:
-            reader_file = open(path, 'rb')
-            reader = csv.DictReader(reader_file,
-                                    fieldnames=['session_id', 'data', 'expires', 'ip_address', 'user-agent'])
-            for line in reader:
-                if line['session_id'] == session_id:
-                    reader_file.close()
-                    kwargs = FileSession.deserialize(line['data'])
-                    return FileSession(path, **kwargs)
-            reader_file.close()
-            return None
-        except:
-            return None
-
-    def delete(self):
-        """Remove the session from the storage file. File manipulation is
-        done the same way as in save()."""
-        reader_file = open(self.file_path, 'rb')
-        reader = csv.DictReader(reader_file,
-                                fieldnames=['session_id', 'data', 'expires', 'ip_address', 'user-agent'])
-        writer_temp = tempfile.mkstemp()[1]
-        writer_temp_file = open(writer_temp, 'w+b')
-        writer = csv.DictWriter(writer_temp_file,
-                                ['session_id', 'data', 'expires', 'ip_address', 'user-agent'])
-        for line in reader:
-            if line['session_id'] != self.session_id:
-                writer.writerow(line)
-
-        reader_file.close()
-        writer_temp_file.close()
-        os.rename(writer_temp, self.file_path) # rename the temporary holder to the session file
-
-    @staticmethod
-    def delete_expired(file_path):
-        reader_file = open(file_path, 'rb')
-        reader = csv.DictReader(reader_file,
-                                fieldnames=['session_id', 'data', 'expires', 'ip_address', 'user-agent'])
-        writer_temp = tempfile.mkstemp()[1]
-        writer_temp_file = open(writer_temp, 'w+b')
-        writer = csv.DictWriter(writer_temp_file,
-                                ['session_id', 'data', 'expires', 'ip_address', 'user-agent'])
-        for line in reader:
-            if int(line['expires']) > int(time.time()):
-                writer.writerow(line)
-
-        reader_file.close()
-        writer_temp_file.close()
-        os.rename(writer_temp, file_path)
-
-class DirSession(BaseSession):
-    """A "directory" based session storage. Every session is stored in a
-    separate file, so one file represents one session. The files are
-    named as the session_id plus '.session' suffix. Data is stored in
-    CSV format. Make sure the directory where the files are stored is
-    readable and writtable to the Anzu process."""
-    def __init__(self, dir_path, **kwargs):
-        super(DirSession, self).__init__(**kwargs)
-        self.dir_path = dir_path
-        if not kwargs.has_key('session_id'):
-            self.save()
-
-    def save(self):
-        """Save the session to a file. The algorithm first writes to a temp
-        file created in the sessions directory. When all data is written,
-        it renames it to the correct name (<session_id>.session)."""
-        if not self.dirty:
-            return
-        session_file = os.path.join(self.dir_path, self.session_id+'.session')
-        # write to temp file and then rename
-        temp_fd, temp_name = tempfile.mkstemp(dir=self.dir_path)
-        temp_file = os.fdopen(temp_fd, 'w+b')
-        writer = csv.writer(temp_file)
-        writer.writerow([self.session_id,
-                         self.serialize(),
-                         int(time.mktime(self.expires.timetuple())),
-                         self.ip_address,
-                         self.user_agent])
-        temp_file.close()
-        os.rename(temp_name, session_file)
-        self.dirty = False
-
-    @staticmethod
-    def load(session_id, directory):
-        """Load session from file storage."""
-        try:
-            session_file_name = os.path.join(directory, session_id+'.session')
-            if os.path.isfile(session_file_name):
-                session_file = open(session_file_name, 'rb')
-                reader = csv.reader(session_file)
-                l = reader.next()
-                kwargs = DirSession.deserialize(l[1])
-                return DirSession(directory, **kwargs)
-            return None
-        except:
-            return None
-
-    def delete(self):
-        """Deletes the session file."""
-        session_file = os.path.join(self.dir_path, self.session_id+'.session')
-        if os.path.isfile(session_file):
-            os.remove(session_file)
-
-    @staticmethod
-    def delete_expired(dir_path):
-        assert os.path.isdir(dir_path)
-        all_files = os.listdir(dir_path)
-        session_files = filter(lambda x: x.endswith('.session'), all_files)
-        for s in session_files:
-            name = os.path.join(dir_path, s)
-            session_file = open(name, 'rb')
-            reader = csv.reader(session_file)
-            data = reader.next()
-            session_file.close()
-            if int(data[2]) < int(time.time()):
-                os.remove(name)
-
-
 class MySQLSession(BaseSession):
     """Enables MySQL to act as a session storage engine. It uses Anzu's
     MySQL wrapper from database.py.
@@ -502,7 +307,7 @@ class MySQLSession(BaseSession):
             match = re.match('mysql://(\w+):(.*?)/(\S+)', details)
             username = match.group(1)
             password = match.group(2)
-            database = match.group(3)        
+            database = match.group(3)
 
         return username, password, host_port, database
 
@@ -763,7 +568,7 @@ try:
                               self.user_agent))
             # count how long should it last and then add or rewrite
             live_sec = self.expires - datetime.datetime.utcnow()
-            self.connection.set(self.session_id, value, time=live_sec.seconds) 
+            self.connection.set(self.session_id, value, time=live_sec.seconds)
             self.dirty = False
 
         @staticmethod
