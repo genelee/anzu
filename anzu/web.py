@@ -60,7 +60,6 @@ import httplib
 import locale
 import logging
 import mimetypes
-import murmur
 import os.path
 import re
 import session
@@ -76,6 +75,12 @@ import uuid
 
 from mako.template import Template
 from mako.lookup import TemplateLookup
+
+try:
+    import murmur
+    has_murmurhash2 = True
+except:
+    has_murmurhash2 = False
 
 _log = logging.getLogger('anzu.web')
 
@@ -745,9 +750,16 @@ class RequestHandler(object):
         hashes = RequestHandler._static_hashes
         if path not in hashes:
             try:
-                hash = murmur.file_hash(os.path.join(
-                    self.application.settings["static_path"], path))
-                hashes[path] = util.baseN(hash, 36)
+                if has_murmurhash2:
+                    hash = murmur.file_hash(os.path.join(
+                        self.application.settings["static_path"], path))
+                    hashes[path] = util.baseN(hash, 36)
+                else:
+                    f = open(os.path.join(
+                        self.application.settings["static_path"], path))
+                    hashes[path] = util.baseN(int(
+                        hashlib.md5(f.read()).hexdigest(), 16), 36)[:5]
+                    f.close()
             except:
                 _log.error("Could not open static file %r", path)
                 hashes[path] = None

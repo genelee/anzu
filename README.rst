@@ -14,7 +14,7 @@ Key differences to vanilla Tornado
 - Localization is based upon the standard `Gettext <http://www.gnu.org/software/gettext/>`_ instead of the CSV implementation in the original Tornado. Moreover, it supports pluralization exactly like Tornado does. By `Alexandre Fiori <fiorix@gmail.com>`_.
 - Templating is done by `Mako <http://www.makotemplates.org/>`_, which features everything that the original templating module could (including compiling into native Python modules) and which has mature error reporting functions.
 - Validation by `FormEncode <http://formencode.org/>`_ with decorators similar to TurboGears'.
-- Static files are hashed by `Murmurhash2 <http://murmurhash.googlepages.com/>`_ and not SHA1.
+- If ``dev-python/murmur`` is installed, static files will be hashed by `Murmurhash2 <http://murmurhash.googlepages.com/>`_ and not SHA1 or MD5.
 - Sessions support from `Milan Cermak <http://github.com/milancermak/tornado/>`_. You can store session data in files, MySQL, Redis, Memcached and MongoDB.
 - Runs under Windows, changes by `Mark Guagenti <http://github.com/mgenti/tornado>`_.
 

@@ -44,7 +44,6 @@ distutils.core.setup(
     description="Fork of Facebook's Tornado with support for Mako templating, gettext i18n and sessions.",
     install_requires = [
         "Mako >= 0.2",
-        "Murmur",
         "FormEncode >= 1.2.2",
     ],
 )
