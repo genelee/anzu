@@ -99,7 +99,8 @@ class RequestHandler(object):
         if isinstance(self, StaticFileHandler):
             self.session = None
         elif self.application.settings.get("session_storage"):
-            print self.application.settings.get("session_storage")
+            _log.debug("Session storage is %s",
+                       self.application.settings.get("session_storage"))
             self.session = self._create_session()
         else:
             self.session = None
@@ -906,6 +907,8 @@ class RequestHandler(object):
                 old_session = session.RedisSession.load(session_id, settings['_db'])
                 if old_session is None or old_session._is_expired(): # create new session
                     new_session = session.RedisSession(settings['_db'], **kw)
+            else:
+                _log.error("Unknown session url.")
 
         if old_session is not None:
             if old_session._should_regenerate():
@@ -913,6 +916,7 @@ class RequestHandler(object):
                 # TODO: security checks
             return old_session
 
+        assert new_session is not None, "new_session is expected to be not None"
         return new_session
 
 
