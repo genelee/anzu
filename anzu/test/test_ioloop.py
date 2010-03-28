@@ -3,7 +3,7 @@
 import unittest
 import time
 
-from tornado import ioloop
+from anzu import ioloop
 
 
 class TestIOLoop(unittest.TestCase):

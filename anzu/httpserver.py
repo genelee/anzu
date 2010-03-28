@@ -40,7 +40,7 @@ try:
 except ImportError:
     ssl = None
 
-_log = logging.getLogger('tornado.httpserver')
+_log = logging.getLogger('anzu.httpserver')
 
 class HTTPServer(object):
     """A non-blocking, single-threaded HTTP server.
