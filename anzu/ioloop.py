@@ -54,7 +54,7 @@ class IOLoop(object):
                 try:
                     connection, address = sock.accept()
                 except socket.error, e:
-                    if e[0] not in (errno.EWOULDBLOCK, errno.EAGAIN):
+                    if e.errno not in (errno.EWOULDBLOCK, errno.EAGAIN):
                         raise
                     return
                 connection.setblocking(0)
@@ -200,7 +200,7 @@ class IOLoop(object):
 
             try:
                 event_pairs = self._impl.poll(poll_timeout)
-            except Exception, e:
+            except EnvironmentError, e:
                 if e.errno == errno.EINTR:
                     _log.warning("Interrupted system call", exc_info=1)
                     continue
@@ -218,8 +218,8 @@ class IOLoop(object):
                     self._handlers[fd](fd, events)
                 except (KeyboardInterrupt, SystemExit):
                     raise
-                except (OSError, IOError), e:
-                    if e[0] == errno.EPIPE:
+                except EnvironmentError, e:
+                    if e.errno == errno.EPIPE:
                         # Happens when the client closes the connection
                         pass
                     else:

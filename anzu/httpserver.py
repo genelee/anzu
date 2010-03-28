@@ -205,8 +205,8 @@ class HTTPServer(object):
                                          ioloop.IOLoop.READ)
 
     def stop(self):
-      for s in self._socket:
-          self.io_loop.remove_handler(s.fileno())
+      for f,s in self._socket.items():
+          self.io_loop.remove_handler(f)
           s.close()
 
     def _handle_events(self, fd, events):
@@ -214,7 +214,7 @@ class HTTPServer(object):
             try:
                 connection, address = self._socket[fd].accept()
             except socket.error, e:
-                if e[0] in (errno.EWOULDBLOCK, errno.EAGAIN):
+                if e.errno in (errno.EWOULDBLOCK, errno.EAGAIN):
                     return
                 raise
             if self.ssl_options is not None:

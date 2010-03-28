@@ -27,6 +27,15 @@ import uuid
 from anzu.options import define, options
 
 define("port", default=8888, help="run on the given port", type=int)
+define("facebook_api_key", help="your Facebook application API key",
+       default="9e2ada1b462142c4dfcc8e894ea1e37c")
+define("facebook_secret", help="your Facebook application secret",
+       default="32fc6114554e3c53d5952594510021e2")
+define("twitter_consumer_key", help="your twitter application consumer key",
+       default="JqG2wwxuLK3oMpWhEpSl8g")
+define("twitter_consumer_secret", help="your twitter application consumer secret",
+       default="pyHRZWMSAEpmgSzbwZfHAyrHm0Cq9raJZR8H105mn8")
+
 
 
 class Application(anzu.web.Application):
@@ -44,6 +53,11 @@ class Application(anzu.web.Application):
             template_path=os.path.join(os.path.dirname(__file__), "templates"),
             static_path=os.path.join(os.path.dirname(__file__), "static"),
             xsrf_cookies=True,
+            debug=True,
+            facebook_api_key=options.facebook_api_key,
+            facebook_secret=options.facebook_secret,
+            twitter_consumer_key=options.twitter_consumer_key,
+            twitter_consumer_secret=options.twitter_consumer_secret,
         )
         anzu.web.Application.__init__(self, trivial_handlers=trivial_handlers, **settings)
 
@@ -98,7 +112,7 @@ class MessageNewHandler(BaseHandler, MessageMixin):
     def post(self):
         message = {
             "id": str(uuid.uuid4()),
-            "from": self.current_user["first_name"],
+            "from": self.current_user["username"],
             "body": self.get_argument("body"),
         }
         message["html"] = self.render_string("message.html", message=message)
@@ -127,27 +141,31 @@ class MessageUpdatesHandler(BaseHandler, MessageMixin):
 class AuthLoginHandler(BaseHandler, anzu.auth.GoogleMixin):
     @anzu.web.asynchronous
     def get(self):
-        if self.get_argument("openid.mode", None):
+        if self.get_argument("oauth_token",self.get_argument("session", self.get_argument("openid.mode",None))): # oauth_token for twitter, session for facebook, openid_mode...
             self.get_authenticated_user(self.async_callback(self._on_auth))
             return
-        self.authenticate_redirect(ax_attrs=["name"])
-
+        self.authenticate_redirect()#ax_attrs=["name","email","username"])
+    
     def _on_auth(self, user):
         if not user:
-            raise anzu.web.HTTPError(500, "Google auth failed")
+            raise anzu.web.HTTPError(500, "Auth failed")
         self.set_secure_cookie("user", anzu.escape.json_encode(user))
-        self.redirect("/")
+        self.redirect(self.get_argument("next", "/"))
 
 
 class AuthLogoutHandler(BaseHandler):
     def get(self):
         self.clear_cookie("user")
+        if not self.current_user:
+            self.redirect(self.get_argument("next", "/"))
+            return
         self.write("You are now logged out")
 
 
 def main():
     anzu.options.parse_command_line()
-    http_server = anzu.httpserver.HTTPServer(Application())
+    application = Application()
+    http_server = anzu.httpserver.HTTPServer(application, xheaders=True)
     http_server.listen(options.port)
     anzu.ioloop.IOLoop.instance().start()
 

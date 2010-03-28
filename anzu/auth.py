@@ -192,7 +192,10 @@ class OpenIdMixin(object):
             user["name"] = email.split("@")[0]
         if email: user["email"] = email
         if locale: user["locale"] = locale
-        if username: user["username"] = username
+        if username:
+            user["username"] = username
+        elif email:
+            user["username"] = user["email"].split("@")[0]
         callback(user)
 
 
@@ -705,7 +708,7 @@ class FacebookMixin(object):
             "display": "page",
             "next": urlparse.urljoin(self.request.full_url(), callback_uri),
             "return_session": "true",
-            "req_perms": "",
+            "req_perms": "read_stream",
         }
         if cancel_uri:
             args["cancel_url"] = urlparse.urljoin(
