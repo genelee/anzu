@@ -135,6 +135,12 @@ class IOStream(object):
 
     def close(self):
         """Close this stream."""
+        if self._read_bytes:
+            callback = self._read_callback
+            self._read_callback = None
+            self._read_bytes = None
+            callback(self._consume(len(self._read_buffer)))
+
         if self.socket is not None:
             self.io_loop.remove_handler(self.socket.fileno())
             self.socket.close()
