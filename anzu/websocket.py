@@ -75,7 +75,7 @@ class WebSocketHandler(anzu.web.RequestHandler):
             "HTTP/1.1 101 Web Socket Protocol Handshake\r\n"
             "Upgrade: WebSocket\r\n"
             "Connection: Upgrade\r\n"
-            "Server: Anzu/0.2\r\n"
+            "Server: Anzu/0.3\r\n"
             "WebSocket-Origin: " + self.request.headers["Origin"] + "\r\n"
             "WebSocket-Location: ws://" + self.request.host +
             self.request.path + "\r\n\r\n")

@@ -230,7 +230,7 @@ class WSGIContainer(object):
         if "content-type" not in header_set:
             headers.append(("Content-Type", "text/html; charset=UTF-8"))
         if "server" not in header_set:
-            headers.append(("Server", "Anzu/0.2"))
+            headers.append(("Server", "Anzu/0.3"))
 
         parts = ["HTTP/1.1 " + data["status"] + "\r\n"]
         for key, value in headers:

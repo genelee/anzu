@@ -162,7 +162,7 @@ class RequestHandler(object):
     def clear(self):
         """Resets all headers and content for this response."""
         self._headers = {
-            "Server": "Anzu/0.2",
+            "Server": "Anzu/0.3",
             "Content-Type": "text/html; charset=UTF-8",
         }
         if not self.request.supports_http_1_1():
