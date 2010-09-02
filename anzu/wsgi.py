@@ -56,7 +56,7 @@ import httplib
 import logging
 import sys
 import time
-import tornado
+import anzu
 import urllib
 
 from anzu import escape

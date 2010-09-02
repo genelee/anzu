@@ -14,5 +14,5 @@ def all():
     return unittest.defaultTestLoader.loadTestsFromNames(TEST_MODULES)
 
 if __name__ == '__main__':
-    import tornado.testing
+    import anzu.testing
     tornado.testing.main()

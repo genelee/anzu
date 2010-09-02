@@ -68,7 +68,7 @@ import stat
 import sys
 import tempfile
 import time
-import tornado
+import anzu
 import types
 import urllib
 import urlparse

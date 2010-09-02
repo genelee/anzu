@@ -27,7 +27,7 @@ import logging
 import os
 import sys
 import time
-import tornado.ioloop
+import anzu.ioloop
 import traceback
 import unittest
 
@@ -321,8 +321,8 @@ def main():
         if not options.autoreload:
             raise
     if options.autoreload:
-        import tornado.autoreload
-        import tornado.ioloop
+        import anzu.autoreload
+        import anzu.ioloop
         ioloop = tornado.ioloop.IOLoop()
         tornado.autoreload.start(ioloop)
         ioloop.start()
