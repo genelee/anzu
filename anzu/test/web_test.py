@@ -1,5 +1,5 @@
-from tornado.testing import LogTrapTestCase, AsyncHTTPTestCase
-from tornado.web import RequestHandler, _O, authenticated, Application
+from anzu.testing import LogTrapTestCase, AsyncHTTPTestCase
+from anzu.web import RequestHandler, _O, authenticated, Application
 
 import logging
 import re

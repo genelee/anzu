@@ -248,10 +248,10 @@ class AsyncHTTPClient(object):
         # perspective.  This is because when socket_action is
         # called with SOCKET_TIMEOUT, libcurl decides internally which
         # timeouts need to be processed by using a monotonic clock
-        # (where available) while tornado uses python's time.time()
+        # (where available) while anzu uses python's time.time()
         # to decide when timeouts have occurred.  When those clocks
         # disagree on elapsed time (as they will whenever there is an
-        # NTP adjustment), tornado might call _handle_timeout before
+        # NTP adjustment), anzu might call _handle_timeout before
         # libcurl is ready.  After each timeout, resync the scheduled
         # timeout with libcurl's current state.
         new_timeout = self._multi.timeout()
@@ -353,7 +353,7 @@ class AsyncHTTPClient(object):
             logging.error("Exception in callback %r", info["callback"],
                           exc_info=True)
 
-# For backwards compatibility: Tornado 1.0 included a new implementation of
+# For backwards compatibility: Tornado/Anzu 1.0 included a new implementation of
 # AsyncHTTPClient that has since replaced the original.  Define an alias
 # so anything that used AsyncHTTPClient2 still works
 AsyncHTTPClient2 = AsyncHTTPClient
@@ -629,7 +629,7 @@ def _utf8(value):
     return value
 
 def main():
-    from tornado.options import define, options, parse_command_line
+    from anzu.options import define, options, parse_command_line
     define("print_headers", type=bool, default=False)
     define("print_body", type=bool, default=True)
     define("follow_redirects", type=bool, default=True)

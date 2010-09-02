@@ -18,9 +18,9 @@ information.
 from __future__ import with_statement
 
 from cStringIO import StringIO
-from tornado.httpclient import AsyncHTTPClient
-from tornado.httpserver import HTTPServer
-from tornado.stack_context import StackContext, NullContext
+from anzu.httpclient import AsyncHTTPClient
+from anzu.httpserver import HTTPServer
+from anzu.stack_context import StackContext, NullContext
 import contextlib
 import functools
 import logging
@@ -300,7 +300,7 @@ def main():
     once the tests finish (with an exit status of 0 for success and
     non-zero for failures).
     """
-    from tornado.options import define, options, parse_command_line
+    from anzu.options import define, options, parse_command_line
 
     define('autoreload', type=bool, default=False)
     argv = [sys.argv[0]] + parse_command_line(sys.argv)

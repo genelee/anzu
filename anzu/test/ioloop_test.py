@@ -3,8 +3,8 @@
 import unittest
 import time
 
-from tornado import ioloop
-from tornado.testing import AsyncTestCase, LogTrapTestCase
+from anzu import ioloop
+from anzu.testing import AsyncTestCase, LogTrapTestCase
 
 class TestIOLoop(AsyncTestCase, LogTrapTestCase):
     def test_add_callback_wakeup(self):

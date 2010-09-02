@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import unittest
-from tornado.testing import AsyncTestCase, LogTrapTestCase
+from anzu.testing import AsyncTestCase, LogTrapTestCase
 
 class AsyncTestCaseTest(AsyncTestCase, LogTrapTestCase):
     def test_exception_in_callback(self):

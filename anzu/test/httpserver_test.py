@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-from tornado.testing import AsyncHTTPTestCase, LogTrapTestCase
-from tornado.web import Application, RequestHandler
+from anzu.testing import AsyncHTTPTestCase, LogTrapTestCase
+from anzu.web import Application, RequestHandler
 import os
 import pycurl
 import re
