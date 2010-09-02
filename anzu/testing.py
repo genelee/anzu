@@ -7,7 +7,7 @@ This module contains three parts:
 * LogTrapTestCase:  Subclass of unittest.TestCase that discards log output
   from tests that pass and only produces output for failing tests.
 * main(): A simple test runner (wrapper around unittest.main()) with support
-  for the tornado.autoreload module to rerun the tests when code changes.
+  for the anzu.autoreload module to rerun the tests when code changes.
 
 These components may be used together or independently.  In particular,
 it is safe to combine AsyncTestCase and LogTrapTestCase via multiple
@@ -86,7 +86,7 @@ class AsyncTestCase(unittest.TestCase):
         self.io_loop = self.get_new_ioloop()
 
     def tearDown(self):
-        if self.io_loop is not tornado.ioloop.IOLoop.instance():
+        if self.io_loop is not anzu.ioloop.IOLoop.instance():
             # Try to clean up any file descriptors left open in the ioloop.
             # This avoids leaks, especially when tests are run repeatedly
             # in the same process with autoreload (because curl does not
@@ -110,7 +110,7 @@ class AsyncTestCase(unittest.TestCase):
         subclasses for tests that require a specific IOLoop (usually
         the singleton).
         '''
-        return tornado.ioloop.IOLoop()
+        return anzu.ioloop.IOLoop()
 
     @contextlib.contextmanager
     def _stack_context(self):
@@ -179,7 +179,7 @@ class AsyncHTTPTestCase(AsyncTestCase):
     '''A test case that starts up an HTTP server.
 
     Subclasses must override get_app(), which returns the
-    tornado.web.Application (or other HTTPServer callback) to be tested.
+    anzu.web.Application (or other HTTPServer callback) to be tested.
     Tests will typically use the provided self.http_client to fetch
     URLs from this server.
 
@@ -207,7 +207,7 @@ class AsyncHTTPTestCase(AsyncTestCase):
 
     def get_app(self):
         """Should be overridden by subclasses to return a
-        tornado.web.Application or other HTTPServer callback.
+        anzu.web.Application or other HTTPServer callback.
         """
         raise NotImplementedError()
 
@@ -249,7 +249,7 @@ class LogTrapTestCase(unittest.TestCase):
 
     This class assumes that only one log handler is configured and that
     it is a StreamHandler.  This is true for both logging.basicConfig
-    and the "pretty logging" configured by tornado.options.
+    and the "pretty logging" configured by anzu.options.
     """
     def run(self, result=None):
         logger = logging.getLogger()
@@ -280,19 +280,19 @@ def main():
     """A simple test runner with autoreload support.
 
     The easiest way to run a test is via the command line:
-        python -m tornado.testing --autoreload tornado.test.stack_context_test
+        python -m anzu.testing --autoreload anzu.test.stack_context_test
     See the standard library unittest module for ways in which tests can
     be specified.
 
     Projects with many tests may wish to define a test script like
-    tornado/test/runtests.py.  This script should define a method all()
-    which returns a test suite and then call tornado.testing.main().
+    anzu/test/runtests.py.  This script should define a method all()
+    which returns a test suite and then call anzu.testing.main().
     Note that even when a test script is used, the all() test suite may
     be overridden by naming a single test on the command line.
         # Runs all tests
-        tornado/test/runtests.py --autoreload
+        anzu/test/runtests.py --autoreload
         # Runs one test
-        tornado/test/runtests.py --autoreload tornado.test.stack_context_test
+        anzu/test/runtests.py --autoreload anzu.test.stack_context_test
 
     If --autoreload is specified, the process will continue running
     after the tests finish, and when any source file changes the tests
@@ -323,8 +323,8 @@ def main():
     if options.autoreload:
         import anzu.autoreload
         import anzu.ioloop
-        ioloop = tornado.ioloop.IOLoop()
-        tornado.autoreload.start(ioloop)
+        ioloop = anzu.ioloop.IOLoop()
+        anzu.autoreload.start(ioloop)
         ioloop.start()
 
 if __name__ == '__main__':

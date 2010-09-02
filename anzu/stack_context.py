@@ -18,7 +18,7 @@
 that follows execution as it moves to other execution contexts.
 
 The motivating examples are to eliminate the need for explicit
-async_callback wrappers (as in tornado.web.RequestHandler), and to
+async_callback wrappers (as in anzu.web.RequestHandler), and to
 allow some additional context to be kept for logging.
 
 This is slightly magic, but it's an extension of the idea that an exception

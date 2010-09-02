@@ -2,12 +2,12 @@
 import unittest
 
 TEST_MODULES = [
-    'tornado.httputil.doctests',
-    'tornado.test.httpserver_test',
-    'tornado.test.ioloop_test',
-    'tornado.test.stack_context_test',
-    'tornado.test.testing_test',
-    'tornado.test.web_test',
+    'anzu.httputil.doctests',
+    'anzu.test.httpserver_test',
+    'anzu.test.ioloop_test',
+    'anzu.test.stack_context_test',
+    'anzu.test.testing_test',
+    'anzu.test.web_test',
 ]
 
 def all():
@@ -15,4 +15,4 @@ def all():
 
 if __name__ == '__main__':
     import anzu.testing
-    tornado.testing.main()
+    anzu.testing.main()

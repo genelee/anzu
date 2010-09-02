@@ -192,7 +192,7 @@ class HTTPServer(object):
         between any server code.
 
         Note that multiple processes are not compatible with the autoreload
-        module (or the debug=True option to tornado.web.Application).
+        module (or the debug=True option to anzu.web.Application).
         When using multiple processes, no IOLoops can be created or
         referenced until after the call to HTTPServer.start(n).
         """

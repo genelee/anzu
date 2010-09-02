@@ -18,7 +18,7 @@ class SSLTest(AsyncHTTPTestCase, LogTrapTestCase):
 
     def get_httpserver_options(self):
         # Testing keys were generated with:
-        # openssl req -new -keyout tornado/test/test.key -out tornado/test/test.crt -nodes -days 3650 -x509
+        # openssl req -new -keyout anzu/test/test.key -out anzu/test/test.crt -nodes -days 3650 -x509
         test_dir = os.path.dirname(__file__)
         return dict(ssl_options=dict(
                 certfile=os.path.join(test_dir, 'test.crt'),

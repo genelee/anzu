@@ -23,7 +23,7 @@ import anzu.escape
 import anzu.web
 
 
-class WebSocketHandler(tornado.web.RequestHandler):
+class WebSocketHandler(anzu.web.RequestHandler):
     """Subclass this class to create a basic WebSocket handler.
 
     Override on_message to handle incoming messages. You can also override
@@ -140,11 +140,11 @@ class WebSocketHandler(tornado.web.RequestHandler):
         Once the close handshake is successful the socket will be closed.
         """
         if self.client_terminated and self._waiting:
-            tornado.ioloop.IOLoop.instance().remove_timeout(self._waiting)
+            anzu.ioloop.IOLoop.instance().remove_timeout(self._waiting)
             self.stream.close()
         else:
             self.stream.write("\xff\x00")
-            self._waiting = tornado.ioloop.IOLoop.instance().add_timeout(
+            self._waiting = anzu.ioloop.IOLoop.instance().add_timeout(
                                 time.time() + 5, self._abort)
 
     def async_callback(self, callback, *args, **kwargs):
