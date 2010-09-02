@@ -1,3 +1,9 @@
+anzu (1.0) unstable; urgency=low
+
+  * merge with Facebook's Tornado 1.0
+
+ -- W-Mark Kubacki <wmark@hurrikane,de>  Thu, 02 Sep 2010 16:01:32 +0100
+
 anzu (0.3) unstable; urgency=low
 
   * restoration of Windows compatibility
