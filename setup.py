@@ -34,7 +34,7 @@ if "linux" in sys.platform.lower() and not python_26:
 
 distutils.core.setup(
     name="anzu",
-    version="0.3",
+    version="1.0",
     packages = ["anzu"],
     ext_modules = extensions,
     author="W-Mark Kubacki",
