@@ -1295,7 +1295,7 @@ class Application(object):
         else:
             if request.path in self.trivial_handlers:
                 handler = self.trivial_handlers[request.path](self, request)
-            elif handler:
+            elif handlers:
                 for spec in handlers:
                     match = spec.regex.match(request.path)
                     if match:
@@ -1315,7 +1315,7 @@ class Application(object):
                         else:
                             args = [unquote(s) for s in match.groups()]
                         break
-            else:
+            if not handler:
                 handler = ErrorHandler(self, request, 404)
 
         # In debug mode, re-compile templates and reload static files on every
