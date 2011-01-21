@@ -38,3 +38,25 @@ class route(object):
     def get_routes(self):
         return self._routes
 
+# route_redirect decorator provided by Peter Bengtsson via the Tornado mailing list.
+# Use it as follows to redirect other paths into your decorated handler.
+#
+#   from routes import route, route_redirect
+#   route_redirect('/smartphone$', '/smartphone/')
+#   route_redirect('/iphone/$', '/smartphone/iphone/')
+#   @route('/smartphone/$')
+#   class SmartphoneHandler(RequestHandler):
+#        def get(self):
+#            ...
+
+import tornado.web
+def any_get_redirect(self, *a, **k):
+    self.redirect(self.redirect_to)
+
+def route_redirect(from_, to):
+    created_handler = type('CustomRedirectHandler', (tornado.web.RequestHandler,),
+                           dict(get=any_get_redirect))
+    created_handler.redirect_to = to
+    route._routes.append((from_, created_handler))
+
+
