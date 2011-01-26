@@ -85,7 +85,6 @@ class IOStream(object):
         self._read_buffer = StringIO()
         self._write_buffer = StringIO()
         self._read_delimiter = None
-        self._read_checker = None
         self._read_bytes = None
         self._read_callback = None
         self._write_callback = None
@@ -136,17 +135,6 @@ class IOStream(object):
                 break
         self._add_io_state(self.io_loop.READ)
 
-    def read_checked(self, checker, callback):
-        """Call callback when we read the given delimiter."""
-        assert not self._read_callback, "Already reading"
-        if checker(self._read_buffer, self._last_chunk):
-            callback(self._consume(self._read_buffer.tell()))
-            return
-        self._check_closed()
-        self._read_checker = checker
-        self._read_callback = callback
-        self._add_io_state(self.io_loop.READ)
-
     def read_bytes(self, num_bytes, callback):
         """Call callback when we read the given number of bytes."""
         assert not self._read_callback, "Already reading"
@@ -182,12 +170,6 @@ class IOStream(object):
 
     def close(self):
         """Close this stream."""
-        if self._read_bytes:
-            callback = self._read_callback
-            self._read_callback = None
-            self._read_bytes = None
-            callback(self._consume(len(self._read_buffer)))
-
         if self.socket is not None:
             self.io_loop.remove_handler(self.socket.fileno())
             self.socket.close()
