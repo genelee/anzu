@@ -1226,7 +1226,7 @@ class Application(object):
             import autoreload
             autoreload.start()
 
-    def listen(self, port, address="", **kwargs):
+    def listen(self, port, address=None, **kwargs):
         """Starts an HTTP server for this application on the given port.
 
         This is a convenience alias for creating an HTTPServer object
