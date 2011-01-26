@@ -30,13 +30,6 @@ define("port", default=8888, help="run on the given port", type=int)
 
 class Application(anzu.web.Application):
     def __init__(self):
-        trivial_handlers = {
-            "/": MainHandler,
-            "/auth/login": AuthLoginHandler,
-            "/auth/logout": AuthLogoutHandler,
-            "/a/message/new": MessageNewHandler,
-            "/a/message/updates": MessageUpdatesHandler,
-        }
         settings = dict(
             cookie_secret="43oETzKXQAGaYdkL5gEmGeJJFuYh7EQnp2XdTP1o/Vo=",
             login_url="/auth/login",
@@ -45,7 +38,7 @@ class Application(anzu.web.Application):
             xsrf_cookies=True,
             debug=True,
         )
-        anzu.web.Application.__init__(self, trivial_handlers=trivial_handlers, **settings)
+        anzu.web.Application.__init__(self, **settings)
 
 
 class BaseHandler(anzu.web.RequestHandler):
@@ -55,6 +48,7 @@ class BaseHandler(anzu.web.RequestHandler):
         return anzu.escape.json_decode(user_json)
 
 
+@anzu.web.location('/')
 class MainHandler(BaseHandler):
     @anzu.web.authenticated
     def get(self):
@@ -93,6 +87,7 @@ class MessageMixin(object):
             cls.cache = cls.cache[-self.cache_size:]
 
 
+@anzu.web.location('/a/message/new')
 class MessageNewHandler(BaseHandler, MessageMixin):
     @anzu.web.authenticated
     def post(self):
@@ -109,6 +104,7 @@ class MessageNewHandler(BaseHandler, MessageMixin):
         self.new_messages([message])
 
 
+@anzu.web.location('/a/message/updates')
 class MessageUpdatesHandler(BaseHandler, MessageMixin):
     @anzu.web.authenticated
     @anzu.web.asynchronous
@@ -124,6 +120,7 @@ class MessageUpdatesHandler(BaseHandler, MessageMixin):
         self.finish(dict(messages=messages))
 
 
+@anzu.web.location('/auth/login')
 class AuthLoginHandler(BaseHandler, anzu.auth.GoogleMixin):
     @anzu.web.asynchronous
     def get(self):
@@ -139,6 +136,7 @@ class AuthLoginHandler(BaseHandler, anzu.auth.GoogleMixin):
         self.redirect("/")
 
 
+@anzu.web.location('/auth/logout')
 class AuthLogoutHandler(BaseHandler):
     def get(self):
         self.clear_cookie("user")

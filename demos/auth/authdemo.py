@@ -28,15 +28,11 @@ define("port", default=8888, help="run on the given port", type=int)
 
 class Application(anzu.web.Application):
     def __init__(self):
-        trivial_handlers = {
-            "/": MainHandler,
-            "/auth/login": AuthHandler,
-        }
         settings = dict(
             cookie_secret="32oETzKXQAGaYdkL5gEmGeJJFuYh7EQnp2XdTP1o/Vo=",
             login_url="/auth/login",
         )
-        anzu.web.Application.__init__(self, trivial_handlers=trivial_handlers, **settings)
+        anzu.web.Application.__init__(self, **settings)
 
 
 class BaseHandler(anzu.web.RequestHandler):
@@ -46,6 +42,7 @@ class BaseHandler(anzu.web.RequestHandler):
         return anzu.escape.json_decode(user_json)
 
 
+@anzu.web.location('/')
 class MainHandler(BaseHandler):
     @anzu.web.authenticated
     def get(self):
@@ -53,6 +50,7 @@ class MainHandler(BaseHandler):
         self.write("Hello, " + name)
 
 
+@anzu.web.location('/auth/login')
 class AuthHandler(BaseHandler, anzu.auth.GoogleMixin):
     @anzu.web.asynchronous
     def get(self):

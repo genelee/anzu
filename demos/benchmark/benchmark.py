@@ -13,7 +13,7 @@
 
 from anzu.ioloop import IOLoop
 from anzu.options import define, options, parse_command_line
-from anzu.web import RequestHandler, Application
+from anzu.web import RequestHandler, Application, location
 
 import signal
 import subprocess
@@ -21,6 +21,7 @@ import subprocess
 
 define("port", type=int, default=8888)
 
+@location('/')
 class RootHandler(RequestHandler):
     def get(self):
         self.write("Hello, world")
@@ -33,7 +34,7 @@ def handle_sigchld(sig, frame):
 
 def main():
     parse_command_line()
-    app = Application([("/", RootHandler)])
+    app = Application()
     app.listen(options.port)
     signal.signal(signal.SIGCHLD, handle_sigchld)
     proc = subprocess.Popen(

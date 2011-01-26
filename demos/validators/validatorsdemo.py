@@ -15,6 +15,7 @@ from anzu import validators
 define("port", default=8888, help="run on the given port", type=int)
 
 
+@anzu.web.location('/')
 class MainHandler(anzu.web.RequestHandler):
     def get(self):
         if self.error_for('email'):
@@ -23,8 +24,8 @@ class MainHandler(anzu.web.RequestHandler):
             message = 'Please give us your email.'
         old_value = anzu.escape.xhtml_escape(self.get_argument("email", ''))
         self.write(
-            message 
-            + '<form method="post">Email: <input type="text" name="email" value="' 
+            message
+            + '<form method="post">Email: <input type="text" name="email" value="'
             + old_value + '" />'
             + '<input type="submit" /></form>'
         )
@@ -37,9 +38,7 @@ class MainHandler(anzu.web.RequestHandler):
 
 def main():
     anzu.options.parse_command_line()
-    application = anzu.web.Application(trivial_handlers={
-        "/": MainHandler,
-    })
+    application = anzu.web.Application()
     http_server = anzu.httpserver.HTTPServer(application)
     http_server.listen(options.port)
     anzu.ioloop.IOLoop.instance().start()

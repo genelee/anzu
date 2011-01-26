@@ -35,11 +35,6 @@ define("facebook_secret", help="your Facebook application secret",
 
 class Application(anzu.web.Application):
     def __init__(self):
-        trivial_handlers = {
-            "/": MainHandler,
-            "/auth/login": AuthLoginHandler,
-            "/auth/logout": AuthLogoutHandler,
-        }
         settings = dict(
             cookie_secret="12oETzKXQAGaYdkL5gEmGeJJFuYh7EQnp2XdTP1o/Vo=",
             login_url="/auth/login",
@@ -52,7 +47,7 @@ class Application(anzu.web.Application):
             ui_modules= {"Post": PostModule},
             debug=True,
         )
-        anzu.web.Application.__init__(self, trivial_handlers=trivial_handlers, **settings)
+        anzu.web.Application.__init__(self, **settings)
 
 
 class BaseHandler(anzu.web.RequestHandler):
@@ -62,6 +57,7 @@ class BaseHandler(anzu.web.RequestHandler):
         return anzu.escape.json_decode(user_json)
 
 
+@anzu.web.location('/')
 class MainHandler(BaseHandler, anzu.auth.FacebookMixin):
     @anzu.web.authenticated
     @anzu.web.asynchronous
@@ -81,6 +77,7 @@ class MainHandler(BaseHandler, anzu.auth.FacebookMixin):
         self.render("stream.html", stream=stream)
 
 
+@anzu.web.location('/auth/login')
 class AuthLoginHandler(BaseHandler, anzu.auth.FacebookMixin):
     @anzu.web.asynchronous
     def get(self):
@@ -96,6 +93,7 @@ class AuthLoginHandler(BaseHandler, anzu.auth.FacebookMixin):
         self.redirect(self.get_argument("next", "/"))
 
 
+@anzu.web.location('/auth/logout')
 class AuthLogoutHandler(BaseHandler, anzu.auth.FacebookMixin):
     @anzu.web.asynchronous
     def get(self):

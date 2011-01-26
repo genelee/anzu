@@ -36,17 +36,6 @@ define("mysql_password", default="blog", help="blog database password")
 
 class Application(anzu.web.Application):
     def __init__(self):
-        trivial_handlers = {
-            "/": HomeHandler,
-            "/archive": ArchiveHandler,
-            "/feed": FeedHandler,
-            "/compose": ComposeHandler,
-            "/auth/login": AuthLoginHandler,
-            "/auth/logout": AuthLogoutHandler,
-        }
-        handlers = [
-            (r"/entry/([^/]+)", EntryHandler),
-        ]
         settings = dict(
             blog_title=u"Anzu Blog",
             template_path=os.path.join(os.path.dirname(__file__), "templates"),
@@ -56,9 +45,7 @@ class Application(anzu.web.Application):
             cookie_secret="11oETzKXQAGaYdkL5gEmGeJJFuYh7EQnp2XdTP1o/Vo=",
             login_url="/auth/login",
         )
-        anzu.web.Application.__init__(self, handlers,
-                                         trivial_handlers=trivial_handlers,
-                                         **settings)
+        anzu.web.Application.__init__(self, **settings)
 
         # Have one global connection to the blog DB across all handlers
         self.db = anzu.database.Connection(
@@ -77,6 +64,7 @@ class BaseHandler(anzu.web.RequestHandler):
         return self.db.get("SELECT * FROM authors WHERE id = %s", int(user_id))
 
 
+@anzu.web.location('/')
 class HomeHandler(BaseHandler):
     def get(self):
         entries = self.db.query("SELECT * FROM entries ORDER BY published "
@@ -87,6 +75,7 @@ class HomeHandler(BaseHandler):
         self.render("home.html", entries=entries)
 
 
+@anzu.web.path(r"/entry/([^/]+)")
 class EntryHandler(BaseHandler):
     def get(self, slug):
         entry = self.db.get("SELECT * FROM entries WHERE slug = %s", slug)
@@ -94,6 +83,7 @@ class EntryHandler(BaseHandler):
         self.render("entry.html", entry=entry)
 
 
+@anzu.web.location('/archive')
 class ArchiveHandler(BaseHandler):
     def get(self):
         entries = self.db.query("SELECT * FROM entries ORDER BY published "
@@ -101,6 +91,7 @@ class ArchiveHandler(BaseHandler):
         self.render("archive.html", entries=entries)
 
 
+@anzu.web.location('/feed')
 class FeedHandler(BaseHandler):
     def get(self):
         entries = self.db.query("SELECT * FROM entries ORDER BY published "
@@ -109,6 +100,7 @@ class FeedHandler(BaseHandler):
         self.render("feed.xml", entries=entries)
 
 
+@anzu.web.location('/compose')
 class ComposeHandler(BaseHandler):
     @anzu.web.authenticated
     def get(self):
@@ -148,6 +140,7 @@ class ComposeHandler(BaseHandler):
         self.redirect("/entry/" + slug)
 
 
+@anzu.web.location('/auth/login')
 class AuthLoginHandler(BaseHandler, anzu.auth.GoogleMixin):
     @anzu.web.asynchronous
     def get(self):
@@ -177,6 +170,7 @@ class AuthLoginHandler(BaseHandler, anzu.auth.GoogleMixin):
         self.redirect(self.get_argument("next", "/"))
 
 
+@anzu.web.location('/auth/logout')
 class AuthLogoutHandler(BaseHandler):
     def get(self):
         self.clear_cookie("user")

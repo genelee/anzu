@@ -24,6 +24,7 @@ from anzu.options import define, options
 define("port", default=8888, help="run on the given port", type=int)
 
 
+@anzu.web.location('/')
 class MainHandler(anzu.web.RequestHandler):
     def get(self):
         self.write("Hello, world")
@@ -31,9 +32,7 @@ class MainHandler(anzu.web.RequestHandler):
 
 def main():
     anzu.options.parse_command_line()
-    application = anzu.web.Application(trivial_handlers={
-        "/": MainHandler,
-    })
+    application = anzu.web.Application()
     http_server = anzu.httpserver.HTTPServer(application)
     http_server.listen(options.port)
     anzu.ioloop.IOLoop.instance().start()

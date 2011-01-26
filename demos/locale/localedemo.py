@@ -10,6 +10,7 @@ import anzu.ioloop
 import anzu.web
 import anzu.locale
 
+@anzu.web.location('/')
 class MainHandler(anzu.web.RequestHandler):
     def get(self):
         # you don't need following line in templates
@@ -17,13 +18,11 @@ class MainHandler(anzu.web.RequestHandler):
         self.write(_("Current locale is %s from the available %s.")
             % (self.locale.code, anzu.locale.get_supported_locales(MainHandler)))
 
-application = anzu.web.Application(trivial_handlers={
-    "/": MainHandler,
-})
 
 if __name__ == "__main__":
     cwd = os.path.dirname(__file__)
     anzu.locale.load_gettext_translations(os.path.join(cwd, "locales"), "messages")
+    application = anzu.web.Application()
     http_server = anzu.httpserver.HTTPServer(application)
     http_server.listen(8888)
     anzu.ioloop.IOLoop.instance().start()
