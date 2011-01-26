@@ -561,6 +561,7 @@ class RequestHandler(object):
                 module_directory=self.application.settings.get("mako_module_directory"),
                 input_encoding='utf-8',
                 output_encoding='utf-8',
+                default_filters=['decode.utf8'],
                 filesystem_checks=self.application.settings.get("debug") or False)
         t = Application._templates.get_template(template_name)
         args = dict(
