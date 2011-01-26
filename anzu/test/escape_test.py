@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import tornado.escape
+import anzu.escape
 import unittest
 
 linkify_tests = [
@@ -122,6 +122,6 @@ linkify_tests = [
 class EscapeTestCase(unittest.TestCase):
     def test_linkify(self):
         for text, kwargs, html in linkify_tests:
-            linked = tornado.escape.linkify(text, **kwargs)
+            linked = anzu.escape.linkify(text, **kwargs)
             self.assertEqual(linked, html)
 

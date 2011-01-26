@@ -147,7 +147,7 @@ class EntryModule(anzu.web.UIModule):
 
 
 settings = {
-    "blog_title": u"Tornado Blog",
+    "blog_title": u"Anzu Blog",
     "template_path": os.path.join(os.path.dirname(__file__), "templates"),
     "ui_modules": {"Entry": EntryModule},
     "xsrf_cookies": True,

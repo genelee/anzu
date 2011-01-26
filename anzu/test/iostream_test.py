@@ -1,6 +1,6 @@
-from tornado.iostream import IOStream
-from tornado.testing import AsyncHTTPTestCase, LogTrapTestCase
-from tornado.web import RequestHandler, Application
+from anzu.iostream import IOStream
+from anzu.testing import AsyncHTTPTestCase, LogTrapTestCase
+from anzu.web import RequestHandler, Application
 import socket
 
 class HelloHandler(RequestHandler):

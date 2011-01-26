@@ -666,7 +666,7 @@ def main():
 # and may be removed or replaced with a better way of specifying the preferred
 # HTTPClient implementation before the next release.
 if os.environ.get('USE_SIMPLE_HTTPCLIENT'):
-    from tornado.simple_httpclient import SimpleAsyncHTTPClient as AsyncHTTPClient
+    from anzu.simple_httpclient import SimpleAsyncHTTPClient as AsyncHTTPClient
 
 if __name__ == "__main__":
     main()

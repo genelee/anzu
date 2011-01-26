@@ -2,11 +2,11 @@
 from __future__ import with_statement
 
 from cStringIO import StringIO
-from tornado.httpclient import HTTPRequest, HTTPResponse, HTTPError
-from tornado.httputil import HTTPHeaders
-from tornado.ioloop import IOLoop
-from tornado.iostream import IOStream, SSLIOStream
-from tornado import stack_context
+from anzu.httpclient import HTTPRequest, HTTPResponse, HTTPError
+from anzu.httputil import HTTPHeaders
+from anzu.ioloop import IOLoop
+from anzu.iostream import IOStream, SSLIOStream
+from anzu import stack_context
 
 import contextlib
 import errno
@@ -28,7 +28,7 @@ class SimpleAsyncHTTPClient(object):
     WARNING:  This class is still in development and not yet recommended
     for production use.
 
-    This class implements an HTTP 1.1 client on top of Tornado's IOStreams.
+    This class implements an HTTP 1.1 client on top of Anzu's IOStreams.
     It does not currently implement all applicable parts of the HTTP
     specification, but it does enough to work with major web service APIs
     (mostly tested against the Twitter API so far).
@@ -207,7 +207,7 @@ class _HTTPConnection(object):
 
 
 def main():
-    from tornado.options import define, options, parse_command_line
+    from anzu.options import define, options, parse_command_line
     args = parse_command_line()
     client = SimpleAsyncHTTPClient()
     io_loop = IOLoop.instance()

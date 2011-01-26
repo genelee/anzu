@@ -48,7 +48,7 @@ class Application(anzu.web.Application):
             (r"/entry/([^/]+)", EntryHandler),
         ]
         settings = dict(
-            blog_title=u"Tornado Blog",
+            blog_title=u"Anzu Blog",
             template_path=os.path.join(os.path.dirname(__file__), "templates"),
             static_path=os.path.join(os.path.dirname(__file__), "static"),
             ui_modules={"Entry": EntryModule},

@@ -863,7 +863,7 @@ class RequestHandler(object):
     def async_callback(self, callback, *args, **kwargs):
         """Obsolete - catches exceptions from the wrapped function.
 
-        This function is unnecessary since Tornado 1.1.
+        This function is unnecessary since Tornado/Anzu 1.1.
         """
         if callback is None:
             return None

@@ -46,8 +46,8 @@ class IOStream(object):
 
     A very simple (and broken) HTTP client using this class:
 
-        from tornado import ioloop
-        from tornado import iostream
+        from anzu import ioloop
+        from anzu import iostream
         import socket
 
         def send_request():

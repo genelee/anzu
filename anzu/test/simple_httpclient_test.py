@@ -3,9 +3,9 @@
 import gzip
 import logging
 
-from tornado.simple_httpclient import SimpleAsyncHTTPClient
-from tornado.testing import AsyncHTTPTestCase, LogTrapTestCase
-from tornado.web import Application, RequestHandler
+from anzu.simple_httpclient import SimpleAsyncHTTPClient
+from anzu.testing import AsyncHTTPTestCase, LogTrapTestCase
+from anzu.web import Application, RequestHandler
 
 class HelloWorldHandler(RequestHandler):
     def get(self):

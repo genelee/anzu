@@ -930,8 +930,8 @@ class FacebookGraphMixin(OAuth2Mixin):
       """ Handles the login for the Facebook user, returning a user object.
 
       Example usage:
-      class FacebookGraphLoginHandler(LoginHandler, tornado.auth.FacebookGraphMixin):
-        @tornado.web.asynchronous
+      class FacebookGraphLoginHandler(LoginHandler, anzu.auth.FacebookGraphMixin):
+        @anzu.web.asynchronous
         def get(self):
             if self.get_argument("code", False):
                 self.get_authenticated_user(
@@ -1012,14 +1012,14 @@ class FacebookGraphMixin(OAuth2Mixin):
         attribute that can be used to make authenticated requests via
         this method. Example usage:
 
-        class MainHandler(tornado.web.RequestHandler,
-                          tornado.auth.FacebookGraphMixin):
-            @tornado.web.authenticated
-            @tornado.web.asynchronous
+        class MainHandler(anzu.web.RequestHandler,
+                          anzu.auth.FacebookGraphMixin):
+            @anzu.web.authenticated
+            @anzu.web.asynchronous
             def get(self):
                 self.facebook_request(
                     "/me/feed",
-                    post_args={"message": "I am posting from my Tornado application!"},
+                    post_args={"message": "I am posting from my Anzu application!"},
                     access_token=self.current_user["access_token"],
                     callback=self.async_callback(self._on_post))
 
