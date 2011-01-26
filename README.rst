@@ -17,47 +17,37 @@ Key differences to vanilla Tornado
 - If ``dev-python/murmur`` is installed, static files will be hashed by `Murmurhash2 <http://murmurhash.googlepages.com/>`_ and not SHA1 or MD5.
 - Sessions support from `Milan Cermak <http://github.com/milancermak/tornado/>`_. You can store session data in files, MySQL, Redis, Memcached and MongoDB.
 - Runs under Windows, changes by `Mark Guagenti <http://github.com/mgenti/tornado>`_.
+- Has `Location` and `Path` decorators, courtesy of Jeremy Kelley, Peter Bengtsson et al.
 
-Extended Example
-================
+Example
+========
 
 ::
 
     import anzu.httpserver
     import anzu.ioloop
     import anzu.web
-    import anzu.locale
 
+    @anzu.web.location('/')
     class MainHandler(anzu.web.RequestHandler):
         def get(self):
-            # you don't need following line in templates
-            _ = self.locale.translate
-            self.write(_("Hello, world"))
+            self.write("Hello, world")
 
+    @anzu.web.path(r'/(\w+)')
     class SecondHandler(anzu.web.RequestHandler):
         def get(self, name):
-            # you don't need following line in templates
-            _ = self.locale.translate
-            self.write(_("Hello, %s") % name)
-
-    trivial_handlers = {
-        "/": MainHandler,
-    }
-    handlers = [
-        (r"/(\w+)", SecondHandler),
-    ]
-    application = anzu.web.Application(
-        handlers=handlers, trivial_handlers=trivial_handlers
-    )
+            self.write("Hello, %s" % name)
 
     if __name__ == "__main__":
         cwd = os.path.dirname(__file__)
-        anzu.locale.load_gettext_translations(os.path.join(cwd, "locales"), "messages")
+        application = anzu.web.Application()
         http_server = anzu.httpserver.HTTPServer(application)
         http_server.listen(8888)
         anzu.ioloop.IOLoop.instance().start()
 
-`trivial_handlers` are being looked up first.
+`Location`s are being looked up first.
+
+Please see the `demos` folder for more examples.
 
 Tornado
 =======

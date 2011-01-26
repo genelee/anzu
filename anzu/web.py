@@ -27,14 +27,13 @@ Here is the canonical "Hello, world" example app:
     import anzu.ioloop
     import anzu.web
 
+    anzu.web.location('/')
     class MainHandler(anzu.web.RequestHandler):
         def get(self):
             self.write("Hello, world")
 
     if __name__ == "__main__":
-        application = anzu.web.Application([
-            (r"/", MainHandler),
-        ])
+        application = anzu.web.Application()
         application.listen(8888)
         anzu.ioloop.IOLoop.instance().start()
 
@@ -1218,6 +1217,9 @@ class Application(object):
                 (r"/(favicon\.ico)", StaticFileHandler, dict(path=path)),
                 (r"/(robots\.txt)", StaticFileHandler, dict(path=path)),
             ] + handlers
+        handlers = handlers + path.get_paths() if handlers else path.get_paths()
+        trivial_handlers = trivial_handlers.update(dict(location.get_paths())) \
+                            if trivial_handlers else dict(location.get_paths())
         if trivial_handlers: self.trivial_handlers = trivial_handlers
         if handlers: self.add_handlers(".*$", handlers)
 
@@ -1848,6 +1850,7 @@ class Path(object):
     @classmethod
     def get_paths(self):
         return self._paths
+path = Path
 
 
 class Location(object):
@@ -1870,6 +1873,7 @@ class Location(object):
     @classmethod
     def get_paths(self):
         return self._paths
+location = Location
 
 
 def redirect_path(from_, to):
