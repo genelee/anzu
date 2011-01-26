@@ -1207,19 +1207,19 @@ class Application(object):
         self._load_ui_modules(settings.get("ui_modules", {}))
         self._load_ui_methods(settings.get("ui_methods", {}))
         if self.settings.get("static_path"):
-            path = self.settings["static_path"]
+            static_path = self.settings["static_path"]
             handlers = list(handlers or [])
             static_url_prefix = settings.get("static_url_prefix",
                                              "/static/")
             handlers = [
                 (re.escape(static_url_prefix) + r"(.*)", StaticFileHandler,
-                 dict(path=path)),
-                (r"/(favicon\.ico)", StaticFileHandler, dict(path=path)),
-                (r"/(robots\.txt)", StaticFileHandler, dict(path=path)),
+                 dict(path=static_path)),
+                (r"/(favicon\.ico)", StaticFileHandler, dict(path=static_path)),
+                (r"/(robots\.txt)", StaticFileHandler, dict(path=static_path)),
             ] + handlers
-        handlers = handlers + path.get_paths() if handlers else path.get_paths()
-        trivial_handlers = trivial_handlers.update(dict(location.get_paths())) \
-                            if trivial_handlers else dict(location.get_paths())
+        handlers = handlers + Path.get_paths() if handlers else Path.get_paths()
+        trivial_handlers = trivial_handlers.update(dict(Location.get_paths())) \
+                            if trivial_handlers else dict(Location.get_paths())
         if trivial_handlers: self.trivial_handlers = trivial_handlers
         if handlers: self.add_handlers(".*$", handlers)
 
@@ -1855,7 +1855,7 @@ path = Path
 
 class Location(object):
     """
-    Decorates RequestHandlers like Path does, but with an other meaning.
+    Decorates RequestHandlers like "path" does, but with an other meaning.
 
     Locations are not meant to be called with regular expressions and are
     used in trivial string matching.
