@@ -73,6 +73,7 @@ class BaseHandler(anzu.web.RequestHandler):
             self, template_name, users=users, **kwargs)
 
 
+@anzu.web.location('/')
 class HomeHandler(BaseHandler):
     def get(self):
         entries = db.Query(Entry).order('-published').fetch(limit=5)
@@ -83,6 +84,7 @@ class HomeHandler(BaseHandler):
         self.render("home.html", entries=entries)
 
 
+@anzu.web.path(r"/entry/([^/]+)")
 class EntryHandler(BaseHandler):
     def get(self, slug):
         entry = db.Query(Entry).filter("slug =", slug).get()
@@ -90,12 +92,14 @@ class EntryHandler(BaseHandler):
         self.render("entry.html", entry=entry)
 
 
+@anzu.web.location('/archive')
 class ArchiveHandler(BaseHandler):
     def get(self):
         entries = db.Query(Entry).order('-published')
         self.render("archive.html", entries=entries)
 
 
+@anzu.web.location('/feed')
 class FeedHandler(BaseHandler):
     def get(self):
         entries = db.Query(Entry).order('-published').fetch(limit=10)
@@ -103,6 +107,7 @@ class FeedHandler(BaseHandler):
         self.render("feed.xml", entries=entries)
 
 
+@anzu.web.location('/compose')
 class ComposeHandler(BaseHandler):
     @administrator
     def get(self):
@@ -152,13 +157,7 @@ settings = {
     "ui_modules": {"Entry": EntryModule},
     "xsrf_cookies": True,
 }
-application = anzu.wsgi.WSGIApplication([
-    (r"/", HomeHandler),
-    (r"/archive", ArchiveHandler),
-    (r"/feed", FeedHandler),
-    (r"/entry/([^/]+)", EntryHandler),
-    (r"/compose", ComposeHandler),
-], **settings)
+application = anzu.wsgi.WSGIApplication(**settings)
 
 
 def main():
