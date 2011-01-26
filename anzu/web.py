@@ -1812,56 +1812,59 @@ class _O(dict):
         self[name] = value
 
 
-class route(object):
+class Path(object):
     """
-    decorates RequestHandlers and builds up a list of routables handlers
+    Decorates RequestHandlers and builds up a list of routable handlers.
 
-    Tech Notes (or "What the *@# is really happening here?")
-    --------------------------------------------------------
-
-    Everytime @route('...') is called, we instantiate a new route object which
+    Everytime @Path('...') is called, we instantiate a new Path object which
     saves off the passed in URI.  Then, since it's a decorator, the function is
     passed to the route.__call__ method as an argument.  We save a reference to
     that handler with our uri in our class level routes list then return that
     class to be instantiated as normal.
 
-    Later, we can call the classmethod route.get_routes to return that list of
-    tuples which can be handed directly to the tornado.web.Application
+    Later, we can call the classmethod Path.get_paths to return that list of
+    tuples which can be handed directly to the anzu.web.Application
     instantiation.
 
     Example
     -------
 
-    @route('/some/path')
+    @Path('/some/path')
     class SomeRequestHandler(RequestHandler):
         pass
 
-    my_routes = route.get_routes()
+    my_paths = Path.get_paths()
     """
-    _routes = []
+    _paths = []
 
     def __init__(self, uri):
         self._uri = uri
 
     def __call__(self, _handler):
         """gets called when we class decorate"""
-        self._routes.append((self._uri, _handler))
+        self._paths.append((self._uri, _handler))
         return _handler
 
     @classmethod
-    def get_routes(self):
-        return self._routes
+    def get_paths(self):
+        return self._paths
 
-# route_redirect decorator provided by Peter Bengtsson via the Tornado mailing list
-# and then improved by Ben Darnell.
-# Use it as follows to redirect other paths into your decorated handler.
-#
-#   from anzu.web import route, route_redirect
-#   route_redirect('/smartphone$', '/smartphone/')
-#   route_redirect('/iphone/$', '/smartphone/iphone/')
-#   @route('/smartphone/$')
-#   class SmartphoneHandler(RequestHandler):
-#        def get(self):
-#            ...
-def route_redirect(from_, to):
-    route._routes.append((from_, tornado.web.RedirectHandler, dict(url=to)))
+
+def redirect_path(from_, to):
+    """
+    Redirects other paths into your decorated handler.
+
+    redirect_path decorator provided by Peter Bengtsson via the Tornado mailing list
+    and then improved by Ben Darnell.
+    Use it as follows::
+
+        from anzu.web import Path, redirect_path
+        redirect_path('/smartphone$', '/smartphone/')
+        redirect_path('/iphone/$', '/smartphone/iphone/')
+        @Path('/smartphone/$')
+        class SmartphoneHandler(RequestHandler):
+             def get(self):
+                 ...
+    """
+    Path._paths.append((from_, RedirectHandler, dict(url=to)))
+
