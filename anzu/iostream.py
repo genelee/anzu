@@ -308,8 +308,8 @@ class IOStream(object):
             raise
         if chunk is None:
             return 0
-        self._read_buffer += chunk
-        if len(self._read_buffer) >= self.max_buffer_size:
+        self._read_buffer.write(chunk)
+        if self._read_buffer.tell() >= self.max_buffer_size:
             logging.error("Reached maximum read buffer size")
             self.close()
             raise IOError("Reached maximum read buffer size")
@@ -321,7 +321,7 @@ class IOStream(object):
         Returns True if the read was completed.
         """
         if self._read_bytes:
-            if len(self._read_buffer) >= self._read_bytes:
+            if self._read_buffer.tell() >= self._read_bytes:
                 num_bytes = self._read_bytes
                 callback = self._read_callback
                 self._read_callback = None
