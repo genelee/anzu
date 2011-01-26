@@ -1241,7 +1241,7 @@ class Application(object):
         """
         # import is here rather than top level because HTTPServer
         # is not importable on appengine
-        from tornado.httpserver import HTTPServer
+        from anzu.httpserver import HTTPServer
         server = HTTPServer(self, **kwargs)
         server.listen(port, address)
 

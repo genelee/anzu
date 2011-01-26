@@ -11,9 +11,9 @@
 # python -m cProfile -o /tmp/prof demos/benchmark/benchmark.py
 # python -c 'import pstats; pstats.Stats("/tmp/prof").strip_dirs().sort_stats("time").print_callers(20)'
 
-from tornado.ioloop import IOLoop
-from tornado.options import define, options, parse_command_line
-from tornado.web import RequestHandler, Application
+from anzu.ioloop import IOLoop
+from anzu.options import define, options, parse_command_line
+from anzu.web import RequestHandler, Application
 
 import signal
 import subprocess
