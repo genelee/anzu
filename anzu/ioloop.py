@@ -100,7 +100,7 @@ class IOLoop(object):
             self._set_close_exec(self._impl.fileno())
         self._handlers = {}
         self._events = {}
-        self._callbacks = set()
+        self._callbacks = []
         self._timeouts = []
         self._running = False
         self._stopped = False
@@ -218,12 +218,10 @@ class IOLoop(object):
 
             # Prevent IO event starvation by delaying new callbacks
             # to the next iteration of the event loop.
-            callbacks = list(self._callbacks)
+            callbacks = self._callbacks
+            self._callbacks = []
             for callback in callbacks:
-                # A callback can add or remove other callbacks
-                if callback in self._callbacks:
-                    self._callbacks.remove(callback)
-                    self._run_callback(callback)
+                self._run_callback(callback)
 
             if self._callbacks:
                 poll_timeout = 0.0
@@ -256,7 +254,6 @@ class IOLoop(object):
                 if (getattr(e, 'errno', None) == errno.EINTR or
                     (isinstance(getattr(e, 'args', None), tuple) and
                      len(e.args) == 2 and e.args[0] == errno.EINTR)):
-                    logging.warning("Interrupted system call", exc_info=1)
                     continue
                 else:
                     raise
@@ -313,17 +310,31 @@ class IOLoop(object):
         return self._running
 
     def add_timeout(self, deadline, callback):
-        """Calls the given callback at the time deadline from the I/O loop."""
+        """Calls the given callback at the time deadline from the I/O loop.
+
+        Returns a handle that may be passed to remove_timeout to cancel.
+        """
         timeout = _Timeout(deadline, stack_context.wrap(callback))
         bisect.insort(self._timeouts, timeout)
         return timeout
 
     def remove_timeout(self, timeout):
+        """Cancels a pending timeout.
+
+        The argument is a handle as returned by add_timeout.
+        """
         self._timeouts.remove(timeout)
 
     def add_callback(self, callback):
-        """Calls the given callback on the next I/O loop iteration."""
-        self._callbacks.add(stack_context.wrap(callback))
+        """Calls the given callback on the next I/O loop iteration.
+
+        It is safe to call this method from any thread at any time.
+        Note that this is the *only* method in IOLoop that makes this
+        guarantee; all other interaction with the IOLoop must be done
+        from that IOLoop's thread.  add_callback() may be used to transfer
+        control from other threads to the IOLoop's thread.
+        """
+        self._callbacks.append(stack_context.wrap(callback))
         self._wake()
 
     def _wake(self):

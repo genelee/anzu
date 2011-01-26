@@ -16,11 +16,13 @@
 
 """A utility class to write to and read from a non-blocking socket."""
 
+from __future__ import with_statement
+
 import errno
 import logging
 import socket
-
 from cStringIO import StringIO
+
 from anzu import ioloop
 from anzu import stack_context
 
@@ -81,8 +83,7 @@ class IOStream(object):
         self.max_buffer_size = max_buffer_size
         self.read_chunk_size = read_chunk_size
         self._read_buffer = StringIO()
-        self._last_chunk = None
-        self._write_buffer = ""
+        self._write_buffer = StringIO()
         self._read_delimiter = None
         self._read_checker = None
         self._read_bytes = None
@@ -116,7 +117,7 @@ class IOStream(object):
             self.socket.connect(address)
         except socket.error, e:
             # In non-blocking mode connect() always raises an exception
-            if e.errno not in (errno.EINPROGRESS, errno.EWOULDBLOCK):
+            if e.args[0] not in (errno.EINPROGRESS, errno.EWOULDBLOCK):
                 raise
         self._connect_callback = stack_context.wrap(callback)
         self._add_io_state(self.io_loop.WRITE)
@@ -171,7 +172,7 @@ class IOStream(object):
         callback is simply overwritten with this new callback.
         """
         self._check_closed()
-        self._write_buffer += data
+        self._write_buffer.write(data)
         self._add_io_state(self.io_loop.WRITE)
         self._write_callback = stack_context.wrap(callback)
 
@@ -200,7 +201,7 @@ class IOStream(object):
 
     def writing(self):
         """Returns true if we are currently writing to the stream."""
-        return len(self._write_buffer) > 0
+        return self._write_buffer.tell() > 0
 
     def closed(self):
         return self.socket is None
@@ -226,7 +227,7 @@ class IOStream(object):
             state = self.io_loop.ERROR
             if self._read_delimiter or self._read_bytes:
                 state |= self.io_loop.READ
-            if self._write_buffer:
+            if self._write_buffer.tell():
                 state |= self.io_loop.WRITE
             if state != self._state:
                 self._state = state
@@ -348,14 +349,15 @@ class IOStream(object):
         self._connecting = False
 
     def _handle_write(self):
-        while self._write_buffer:
+        while self._write_buffer.tell():
             try:
                 # On windows, socket.send blows up if given a write buffer
                 # that's too large, instead of just returning the number
                 # of bytes it was able to process.
-                temp_write_buffer = self._write_buffer[:128 * 1024]
-                num_bytes = self.socket.send(temp_write_buffer)
-                self._write_buffer = self._write_buffer[num_bytes:]
+                buffered_string = self._write_buffer.getvalue()
+                num_bytes = self.socket.send(buffered_string[:128 * 1024])
+                self._write_buffer = StringIO()
+                self._write_buffer.write(buffered_string[num_bytes:])
             except socket.error, e:
                 if e.args[0] in (errno.EWOULDBLOCK, errno.EAGAIN):
                     break
@@ -364,18 +366,16 @@ class IOStream(object):
                                     self.socket.fileno(), e)
                     self.close()
                     return
-        if not self._write_buffer and self._write_callback:
+        if not self._write_buffer.tell() and self._write_callback:
             callback = self._write_callback
             self._write_callback = None
             self._run_callback(callback)
 
     def _consume(self, loc):
-        self._read_buffer.seek(0)
-        result = self._read_buffer.read(loc)
-        new_buffer = StringIO()
-        new_buffer.write(self._read_buffer.read())
-        self._read_buffer = new_buffer
-        return result
+        buffered_string = self._read_buffer.getvalue()
+        self._read_buffer = StringIO()
+        self._read_buffer.write(buffered_string[loc:])
+        return buffered_string[:loc]
 
     def _check_closed(self):
         if not self.socket:

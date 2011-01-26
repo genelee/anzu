@@ -17,7 +17,6 @@
 import logging
 import anzu.auth
 import anzu.escape
-import anzu.httpserver
 import anzu.ioloop
 import anzu.options
 import anzu.web
@@ -144,8 +143,8 @@ class AuthLoginHandler(BaseHandler, anzu.auth.GoogleMixin):
         if self.get_argument("oauth_token",self.get_argument("session", self.get_argument("openid.mode",None))): # oauth_token for twitter, session for facebook, openid_mode...
             self.get_authenticated_user(self.async_callback(self._on_auth))
             return
-        self.authenticate_redirect()#ax_attrs=["name","email","username"])
-    
+        self.authenticate_redirect(ax_attrs=["name"])
+
     def _on_auth(self, user):
         if not user:
             raise anzu.web.HTTPError(500, "Auth failed")
@@ -164,9 +163,8 @@ class AuthLogoutHandler(BaseHandler):
 
 def main():
     anzu.options.parse_command_line()
-    application = Application()
-    http_server = anzu.httpserver.HTTPServer(application, xheaders=True)
-    http_server.listen(options.port)
+    app = Application()
+    app.listen(options.port)
     anzu.ioloop.IOLoop.instance().start()
 
 
