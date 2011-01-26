@@ -1,3 +1,5 @@
+*.komodoproject
+*.kpf
 *.pyc
 *.so
 *~
