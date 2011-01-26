@@ -32,14 +32,20 @@ if "linux" in sys.platform.lower() and not python_26:
     extensions.append(distutils.core.Extension(
         "anzu.epoll", ["anzu/epoll.c"]))
 
+version = "1.1"
+
 distutils.core.setup(
     name="anzu",
-    version="1.0",
-    packages = ["anzu"],
+    version=version,
+    packages = ["anzu", "anzu.test"],
+    package_data = {
+        "anzu.test": ["README.rst", "test.crt", "test.key"],
+        },
     ext_modules = extensions,
     author="W-Mark Kubacki",
     author_email="wmark+anzu@hurrikane.de",
     url="http://mark.ossdl.de/tags/anzu",
+    download_url="http://github.com/downloads/wmark/anzu/anzu-%s.tbz2" % version,
     license="http://www.apache.org/licenses/LICENSE-2.0",
     description="Fork of Facebook's Tornado with support for Mako templating, gettext i18n and sessions.",
     install_requires = [

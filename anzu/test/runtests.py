@@ -3,8 +3,11 @@ import unittest
 
 TEST_MODULES = [
     'anzu.httputil.doctests',
+    'anzu.test.escape_test',
     'anzu.test.httpserver_test',
     'anzu.test.ioloop_test',
+    'anzu.test.iostream_test',
+    'anzu.test.simple_httpclient_test',
     'anzu.test.stack_context_test',
     'anzu.test.testing_test',
     'anzu.test.web_test',
