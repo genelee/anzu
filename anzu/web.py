@@ -1850,6 +1850,28 @@ class Path(object):
         return self._paths
 
 
+class Location(object):
+    """
+    Decorates RequestHandlers like Path does, but with an other meaning.
+
+    Locations are not meant to be called with regular expressions and are
+    used in trivial string matching.
+    """
+    _paths = []
+
+    def __init__(self, uri):
+        self._uri = uri
+
+    def __call__(self, _handler):
+        """gets called when we class decorate"""
+        self._paths.append((self._uri, _handler))
+        return _handler
+
+    @classmethod
+    def get_paths(self):
+        return self._paths
+
+
 def redirect_path(from_, to):
     """
     Redirects other paths into your decorated handler.
