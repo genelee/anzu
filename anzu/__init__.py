@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 #
 # Copyright 2009 Facebook
+# Copyright 201-2011 W-Mark Kubacki
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -16,5 +17,5 @@
 
 """The Anzu web server and tools."""
 
-version = "1.1"
-version_info = (1, 1, 0)
+version = "1.1.1"
+version_info = (1, 1, 1)
