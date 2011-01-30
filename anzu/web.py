@@ -1066,7 +1066,7 @@ def removeslash(method):
     """
     @functools.wraps(method)
     def wrapper(self, *args, **kwargs):
-        if self.request.path.endswith("/"):
+        if self.request.path.endswith("/") and not self.request.path == "/":
             if self.request.method in ("GET", "HEAD"):
                 uri = self.request.path.rstrip("/")
                 if self.request.query: uri += "?" + self.request.query
