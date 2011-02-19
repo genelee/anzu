@@ -156,8 +156,11 @@ class _HTTPConnection(object):
                 if request.ca_certs is not None:
                     ssl_options["ca_certs"] = request.ca_certs
                 else:
-                    ssl_options["ca_certs"] = (os.path.dirname(__file__) + 
-                                               '/ca-certificates.crt')
+                    dist_certs = '/etc/ssl/certs/ca-certificates.crt'
+                    ssl_options["ca_certs"] = dist_certs \
+                            if os.path.exists(dist_certs) \
+                            else (os.path.dirname(__file__) +
+                                  '/ca-certificates.crt')
                 self.stream = SSLIOStream(socket.socket(),
                                           io_loop=self.io_loop,
                                           ssl_options=ssl_options)
