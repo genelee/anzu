@@ -109,11 +109,8 @@ var updater = {
 
     socket: function() {
         updater.ws = new WebSocket("ws://" + document.location.host + "/a/message/stream");
-        updater.ws.onopen = function() {
-            updater.ws.send("Hello!");
-        };
         updater.ws.onmessage = function(event) {
-            updater.showMessage(eval("(" + event.data + ")"));
+            updater.newMessages(eval("(" + event.data + ")"));
         };
     },
 

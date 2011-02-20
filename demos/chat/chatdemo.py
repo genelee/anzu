@@ -76,13 +76,14 @@ class MessageMixin(object):
 
     def new_messages(self, messages):
         cls = MessageMixin
-        logging.info("Sending new message to %r listeners", len(cls.waiters))
-        for callback in cls.waiters:
+        waiters = cls.waiters
+        cls.waiters = []
+        logging.info("Sending new message to %r listeners", len(waiters))
+        for callback in waiters:
             try:
                 callback(messages)
             except:
                 logging.error("Error in waiter callback", exc_info=True)
-        cls.waiters = []
         cls.cache.extend(messages)
         if len(cls.cache) > self.cache_size:
             cls.cache = cls.cache[-self.cache_size:]
@@ -122,12 +123,13 @@ class MessageUpdatesHandler(BaseHandler, MessageMixin):
 
 
 @anzu.web.location('/a/message/stream')
-class MessagesWebSocket(BaseHandler, anzu.websocket.WebSocketHandler):
+class MessagesWebSocket(BaseHandler, anzu.websocket.WebSocketHandler, MessageMixin):
     @anzu.web.authenticated
     def open(self):
         logging.debug("Socket opened by %s", self.current_user["first_name"])
+        self.wait_for_messages(self.on_new_messages, cursor=None)
 
-    def on_message(self, body):
+    def on_message(self, body): # from client
         logging.debug("Received a new message from %s: \"%s\"",
                       self.current_user["first_name"], body)
         message = {
@@ -136,7 +138,13 @@ class MessagesWebSocket(BaseHandler, anzu.websocket.WebSocketHandler):
             "body": body,
         }
         message["html"] = self.render_string("message.html", message=message)
-        self.write_message(message)
+        self.new_messages([message])
+
+    def on_new_messages(self, messages):
+        if self.request.connection.stream.closed():
+            return
+        self.write_message(dict(messages=messages))
+        self.wait_for_messages(self.on_new_messages, cursor=None)
 
 
 @anzu.web.location('/auth/login')
