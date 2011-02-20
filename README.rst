@@ -40,7 +40,6 @@ Example
             self.write("Hello, %s" % name)
 
     if __name__ == "__main__":
-        cwd = os.path.dirname(__file__)
         application = anzu.web.Application()
         http_server = anzu.httpserver.HTTPServer(application)
         http_server.listen(8888)
@@ -50,30 +49,31 @@ Example
 
 Please see the `demos` folder for more examples.
 
-Tornado
-=======
-Tornado is an open source version of the scalable, non-blocking web server
-and and tools that power FriendFeed. Documentation and downloads are
-available at http://www.tornadoweb.org/
-
-Tornado is licensed under the Apache Licence, Version 2.0
+License
+========
+Like Tornado Anzu is licensed under the Apache Licence, Version 2.0
 (http://www.apache.org/licenses/LICENSE-2.0.html).
 
 Installation
 ============
-To install:
+To install::
 
     python setup.py build
     sudo python setup.py install
 
-Tornado has been tested on Python 2.5 and 2.6. To use all of the features
-of Tornado, you need to have PycURL and a JSON library like simplejson
+Anzu has been tested on Python 2.6 and 2.7. To use all of the features
+of Anzu, you need to have PycURL and a JSON library like simplejson
 installed.
 
-On Mac OS X, you can install the packages with:
+On Mac OS X, you can install the packages with::
 
     sudo easy_install setuptools pycurl==7.16.2.1 simplejson
 
-On Ubuntu Linux, you can install the packages with:
+On Ubuntu Linux, you can install the packages with::
 
     sudo apt-get install python-pycurl python-simplejson
+
+On Gentoo, you will need the `OSSDL overlay <http://github.com/wmark/ossdl-overlay>`_ 
+prior installing with::
+
+    sudo emerge dev-python/anzu
