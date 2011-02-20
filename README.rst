@@ -18,6 +18,7 @@ Key differences to vanilla Tornado
 - Sessions support from `Milan Cermak <http://github.com/milancermak/tornado/>`_. You can store session data in files, MySQL, Redis, Memcached and MongoDB.
 - Runs under Windows, changes by `Mark Guagenti <http://github.com/mgenti/tornado>`_.
 - Has `Location` and `Path` decorators, courtesy of Jeremy Kelley, Peter Bengtsson et al.
+- IPv6
 
 Example
 ========
