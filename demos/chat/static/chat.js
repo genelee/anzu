@@ -1,4 +1,5 @@
 // Copyright 2009 FriendFeed
+// Copyright 2011 W-Mark Kubacki
 //
 // Licensed under the Apache License, Version 2.0 (the "License"); you may
 // not use this file except in compliance with the License. You may obtain
@@ -112,6 +113,13 @@ var updater = {
         updater.ws.onmessage = function(event) {
             updater.newMessages(eval("(" + event.data + ")"));
         };
+        updater.ws.onclose = function(event) {
+            $("#messageform").find("input[type=submit]").disable();
+            console.log("ERROR:", "Server closed the socket.", event);
+        };
+        window.addEventListener('unload', function(e) {
+            updater.ws.close();
+        });
     },
 
     poll: function() {
