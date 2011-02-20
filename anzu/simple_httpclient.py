@@ -243,15 +243,16 @@ class _HTTPConnection(object):
         except Exception, e:
             logging.warning("uncaught exception", exc_info=True)
             if self.callback is not None:
-                self.callback(HTTPResponse(self.request, 599, error=e))
+                callback = self.callback
                 self.callback = None
+                callback(HTTPResponse(self.request, 599, error=e))
 
     def _on_close(self):
         if self.callback is not None:
-            self.callback(HTTPResponse(self.request, 599,
-                                       error=HTTPError(599, 
-                                                       "Connection closed")))
+            callback = self.callback
             self.callback = None
+            callback(HTTPResponse(self.request, 599,
+                                  error=HTTPError(599, "Connection closed")))
 
     def _on_headers(self, data):
         first_line, _, header_data = data.partition("\r\n")
@@ -300,6 +301,7 @@ class _HTTPConnection(object):
             new_request.url = urlparse.urljoin(self.request.url,
                                                self.headers["Location"])
             new_request.max_redirects -= 1
+            del new_request.headers["Host"]
             new_request.original_request = original_request
             self.client.fetch(new_request, self.callback)
             self.callback = None
@@ -396,6 +398,9 @@ def match_hostname(cert, hostname):
 
 def main():
     from anzu.options import define, options, parse_command_line
+    define("print_headers", type=bool, default=False)
+    define("print_body", type=bool, default=True)
+    define("follow_redirects", type=bool, default=True)
     args = parse_command_line()
     client = SimpleAsyncHTTPClient()
     io_loop = IOLoop.instance()
@@ -403,8 +408,11 @@ def main():
         def callback(response):
             io_loop.stop()
             response.rethrow()
-            print response.body
-        client.fetch(arg, callback)
+            if options.print_headers:
+                print response.headers
+            if options.print_body:
+                print response.body
+        client.fetch(arg, callback, follow_redirects=options.follow_redirects)
         io_loop.start()
 
 if __name__ == "__main__":

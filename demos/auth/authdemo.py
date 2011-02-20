@@ -48,6 +48,7 @@ class MainHandler(BaseHandler):
     def get(self):
         name = anzu.escape.xhtml_escape(self.current_user["name"])
         self.write("Hello, " + name)
+        self.write("<br><br><a href=\"/auth/logout\">Log out</a>")
 
 
 @anzu.web.location('/auth/login')
@@ -65,6 +66,11 @@ class AuthHandler(BaseHandler, anzu.auth.GoogleMixin):
         self.set_secure_cookie("user", anzu.escape.json_encode(user))
         self.redirect("/")
 
+@anzu.web.location('/auth/logout')
+class LogoutHandler(BaseHandler):
+    def get(self):
+        self.clear_cookie("user")
+        self.redirect("/")
 
 def main():
     anzu.options.parse_command_line()

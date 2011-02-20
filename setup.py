@@ -39,6 +39,7 @@ distutils.core.setup(
     version=version,
     packages = ["anzu", "anzu.test"],
     package_data = {
+        "anzu": ["ca-certificates.crt"],
         "anzu.test": ["README.rst", "test.crt", "test.key"],
         },
     ext_modules = extensions,
