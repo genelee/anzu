@@ -20,6 +20,7 @@ import anzu.escape
 import anzu.ioloop
 import anzu.options
 import anzu.web
+import anzu.websocket
 import os.path
 import uuid
 
@@ -118,6 +119,24 @@ class MessageUpdatesHandler(BaseHandler, MessageMixin):
         if self.request.connection.stream.closed():
             return
         self.finish(dict(messages=messages))
+
+
+@anzu.web.location('/a/message/stream')
+class MessagesWebSocket(BaseHandler, anzu.websocket.WebSocketHandler):
+    @anzu.web.authenticated
+    def open(self):
+        logging.debug("Socket opened by %s", self.current_user["first_name"])
+
+    def on_message(self, body):
+        logging.debug("Received a new message from %s: \"%s\"",
+                      self.current_user["first_name"], body)
+        message = {
+            "id": str(uuid.uuid4()),
+            "from": self.current_user["first_name"],
+            "body": body,
+        }
+        message["html"] = self.render_string("message.html", message=message)
+        self.write_message(message)
 
 
 @anzu.web.location('/auth/login')

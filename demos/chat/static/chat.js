@@ -12,9 +12,14 @@
 // License for the specific language governing permissions and limitations
 // under the License.
 
+function hasWebsockets() {
+    return ("WebSocket" in window);
+}
+
 $(document).ready(function() {
     if (!window.console) window.console = {};
     if (!window.console.log) window.console.log = function() {};
+    if (hasWebsockets()) newMessage = newWSMessage;
 
     $("#messageform").live("submit", function() {
         newMessage($(this));
@@ -27,8 +32,21 @@ $(document).ready(function() {
         }
     });
     $("#message").select();
-    updater.poll();
+    if (hasWebsockets()) {
+        updater.socket();
+    } else {
+        updater.poll();
+    }
 });
+
+function newWSMessage(form) {
+    var disabled = form.find("input[type=submit]");
+    var textinput = form.find("input[type=text]");
+    disabled.disable();
+    updater.ws.send(textinput.val());
+    textinput.val("").select();
+    disabled.enable();
+}
 
 function newMessage(form) {
     var message = form.formToDict();
@@ -87,6 +105,17 @@ jQuery.fn.enable = function(opt_enable) {
 var updater = {
     errorSleepTime: 500,
     cursor: null,
+    ws: null,
+
+    socket: function() {
+        updater.ws = new WebSocket("ws://" + document.location.host + "/a/message/stream");
+        updater.ws.onopen = function() {
+            updater.ws.send("Hello!");
+        };
+        updater.ws.onmessage = function(event) {
+            updater.showMessage(eval("(" + event.data + ")"));
+        };
+    },
 
     poll: function() {
         var args = {"_xsrf": getCookie("_xsrf")};
