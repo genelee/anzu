@@ -2,7 +2,7 @@
 from __future__ import with_statement
 
 from cStringIO import StringIO
-from anzu.httpclient import HTTPRequest, HTTPResponse, HTTPError
+from anzu.httpclient import HTTPRequest, HTTPResponse, HTTPError, AsyncHTTPClient
 from anzu.httputil import HTTPHeaders
 from anzu.ioloop import IOLoop
 from anzu.iostream import IOStream, SSLIOStream
@@ -19,7 +19,6 @@ import re
 import socket
 import time
 import urlparse
-import weakref
 import zlib
 
 try:
@@ -27,7 +26,10 @@ try:
 except ImportError:
     ssl = None
 
-class SimpleAsyncHTTPClient(object):
+_DEFAULT_DIST_CERTS = '/etc/ssl/certs/ca-certificates.crt'
+_DEFAULT_CA_CERTS = os.path.dirname(__file__) + '/ca-certificates.crt'
+
+class SimpleAsyncHTTPClient(AsyncHTTPClient):
     """Non-blocking HTTP client with no external dependencies.
 
     This class implements an HTTP 1.1 client on top of Anzu's IOStreams.
@@ -46,22 +48,19 @@ class SimpleAsyncHTTPClient(object):
 
     Some features found in the curl-based AsyncHTTPClient are not yet
     supported.  In particular, proxies are not supported, connections
-    are not reused, and callers cannot select the network interface to be 
+    are not reused, and callers cannot select the network interface to be
     used.
 
     Python 2.6 or higher is required for HTTPS support.  Users of Python 2.5
     should use the curl-based AsyncHTTPClient if HTTPS support is required.
 
     """
-    _ASYNC_CLIENTS = weakref.WeakKeyDictionary()
+    def initialize(self, io_loop=None, max_clients=10,
+                   max_simultaneous_connections=None,
+                   hostname_mapping=None):
+        """Creates a AsyncHTTPClient.
 
-    def __new__(cls, io_loop=None, max_clients=10,
-                max_simultaneous_connections=None,
-                force_instance=False,
-                hostname_mapping=None):
-        """Creates a SimpleAsyncHTTPClient.
-
-        Only a single SimpleAsyncHTTPClient instance exists per IOLoop
+        Only a single AsyncHTTPClient instance exists per IOLoop
         in order to provide limitations on the number of pending connections.
         force_instance=True may be used to suppress this behavior.
 
@@ -76,22 +75,11 @@ class SimpleAsyncHTTPClient(object):
         settings like /etc/hosts is not possible or desirable (e.g. in
         unittests).
         """
-        io_loop = io_loop or IOLoop.instance()
-        if io_loop in cls._ASYNC_CLIENTS and not force_instance:
-            return cls._ASYNC_CLIENTS[io_loop]
-        else:
-            instance = super(SimpleAsyncHTTPClient, cls).__new__(cls)
-            instance.io_loop = io_loop
-            instance.max_clients = max_clients
-            instance.queue = collections.deque()
-            instance.active = {}
-            instance.hostname_mapping = hostname_mapping
-            if not force_instance:
-                cls._ASYNC_CLIENTS[io_loop] = instance
-            return instance
-
-    def close(self):
-        pass
+        self.io_loop = io_loop
+        self.max_clients = max_clients
+        self.queue = collections.deque()
+        self.active = {}
+        self.hostname_mapping = hostname_mapping
 
     def fetch(self, request, callback, **kwargs):
         if not isinstance(request, HTTPRequest):
@@ -140,12 +128,11 @@ class _HTTPConnection(object):
         self._timeout = None
         with stack_context.StackContext(self.cleanup):
             parsed = urlparse.urlsplit(self.request.url)
-            if ":" in parsed.netloc:
-                host, _, port = parsed.netloc.partition(":")
-                port = int(port)
-            else:
-                host = parsed.netloc
+            host = parsed.hostname
+            if parsed.port is None:
                 port = 443 if parsed.scheme == "https" else 80
+            else:
+                port = parsed.port
             if self.client.hostname_mapping is not None:
                 host = self.client.hostname_mapping.get(host, host)
 
@@ -156,11 +143,9 @@ class _HTTPConnection(object):
                 if request.ca_certs is not None:
                     ssl_options["ca_certs"] = request.ca_certs
                 else:
-                    dist_certs = '/etc/ssl/certs/ca-certificates.crt'
-                    ssl_options["ca_certs"] = dist_certs \
-                            if os.path.exists(dist_certs) \
-                            else (os.path.dirname(__file__) +
-                                  '/ca-certificates.crt')
+                    ssl_options["ca_certs"] = _DEFAULT_DIST_CERTS \
+                            if os.path.exists(_DEFAULT_DIST_CERTS) \
+                            else _DEFAULT_CA_CERTS
                 self.stream = SSLIOStream(socket.socket(),
                                           io_loop=self.io_loop,
                                           ssl_options=ssl_options)
@@ -195,7 +180,7 @@ class _HTTPConnection(object):
         if (self.request.validate_cert and
             isinstance(self.stream, SSLIOStream)):
             match_hostname(self.stream.socket.getpeercert(),
-                           parsed.netloc.partition(":")[0])
+                           parsed.hostname)
         if (self.request.method not in self._SUPPORTED_METHODS and
             not self.request.allow_nonstandard_methods):
             raise KeyError("unknown method %s" % self.request.method)
@@ -206,9 +191,14 @@ class _HTTPConnection(object):
                 raise NotImplementedError('%s not supported' % key)
         if "Host" not in self.request.headers:
             self.request.headers["Host"] = parsed.netloc
-        if self.request.auth_username:
-            auth = "%s:%s" % (self.request.auth_username,
-                              self.request.auth_password)
+        username, password = None, None
+        if parsed.username is not None:
+            username, password = parsed.username, parsed.password
+        elif self.request.auth_username is not None:
+            username = self.request.auth_username
+            password = self.request.auth_password
+        if username is not None:
+            auth = "%s:%s" % (username, password)
             self.request.headers["Authorization"] = ("Basic %s" %
                                                      auth.encode("base64"))
         if self.request.user_agent:
@@ -394,7 +384,6 @@ def match_hostname(cert, hostname):
     else:
         raise CertificateError("no appropriate commonName or "
             "subjectAltName fields were found")
-
 
 def main():
     from anzu.options import define, options, parse_command_line

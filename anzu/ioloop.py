@@ -25,6 +25,7 @@ import time
 import traceback
 
 from anzu import stack_context
+from anzu.escape import utf8
 
 try:
     import signal
@@ -339,7 +340,7 @@ class IOLoop(object):
 
     def _wake(self):
         try:
-            self._waker_writer.write("x")
+            self._waker_writer.write(utf8("x"))
         except IOError:
             pass
 
@@ -366,7 +367,8 @@ class IOLoop(object):
     def _read_waker(self, fd, events):
         try:
             while True:
-                self._waker_reader.read()
+                result = self._waker_reader.read()
+                if not result: break
         except IOError:
             pass
 
@@ -389,9 +391,9 @@ class _Timeout(object):
         self.deadline = deadline
         self.callback = callback
 
-    def __cmp__(self, other):
-        return cmp((self.deadline, id(self.callback)),
-                   (other.deadline, id(other.callback)))
+    def __lt__(self, other):
+        return ((self.deadline, id(self.callback)) <
+                (other.deadline, id(other.callback)))
 
 
 class PeriodicCallback(object):
@@ -494,7 +496,17 @@ class _KQueue(object):
             if kevent.filter == select.KQ_FILTER_READ:
                 events[fd] = events.get(fd, 0) | IOLoop.READ
             if kevent.filter == select.KQ_FILTER_WRITE:
-                events[fd] = events.get(fd, 0) | IOLoop.WRITE
+                if kevent.flags & select.KQ_EV_EOF:
+                    # If an asynchronous connection is refused, kqueue
+                    # returns a write event with the EOF flag set.
+                    # Turn this into an error for consistency with the
+                    # other IOLoop implementations.
+                    # Note that for read events, EOF may be returned before
+                    # all data has been consumed from the socket buffer,
+                    # so we only check for EOF on write events.
+                    events[fd] = IOLoop.ERROR
+                else:
+                    events[fd] = events.get(fd, 0) | IOLoop.WRITE
             if kevent.flags & select.KQ_EV_ERROR:
                 events[fd] = events.get(fd, 0) | IOLoop.ERROR
         return events.items()

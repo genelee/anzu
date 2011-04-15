@@ -2,6 +2,7 @@
 
 from __future__ import with_statement
 
+import base64
 import collections
 import gzip
 import logging
@@ -9,7 +10,7 @@ import socket
 
 from contextlib import closing
 from anzu.ioloop import IOLoop
-from anzu.simple_httpclient import SimpleAsyncHTTPClient
+from anzu.simple_httpclient import SimpleAsyncHTTPClient, _DEFAULT_CA_CERTS
 from anzu.testing import AsyncHTTPTestCase, LogTrapTestCase, get_unused_port
 from anzu.web import Application, RequestHandler, asynchronous, url
 
@@ -76,7 +77,8 @@ class SimpleHTTPClientTestCase(AsyncHTTPTestCase, LogTrapTestCase):
     def setUp(self):
         super(SimpleHTTPClientTestCase, self).setUp()
         # replace the client defined in the parent class
-        self.http_client = SimpleAsyncHTTPClient(io_loop=self.io_loop)
+        self.http_client = SimpleAsyncHTTPClient(io_loop=self.io_loop,
+                                                 force_instance=True)
 
     def test_hello_world(self):
         response = self.fetch("/hello")
@@ -184,8 +186,15 @@ class SimpleHTTPClientTestCase(AsyncHTTPTestCase, LogTrapTestCase):
         self.triggers.popleft()()
         self.wait(condition=lambda: (len(self.triggers) == 2 and
                                      len(seen) == 2))
-        self.assertEqual(seen, [0, 1])
+        self.assertEqual(set(seen), set([0, 1]))
         self.assertEqual(len(client.queue), 0)
+
+        # Finish all the pending requests
+        self.triggers.popleft()()
+        self.triggers.popleft()()
+        self.wait(condition=lambda: len(seen) == 4)
+        self.assertEqual(set(seen), set([0, 1, 2, 3]))
+        self.assertEqual(len(self.triggers), 0)
 
     def test_follow_redirect(self):
         response = self.fetch("/countdown/2", follow_redirects=False)
@@ -206,3 +215,12 @@ class SimpleHTTPClientTestCase(AsyncHTTPTestCase, LogTrapTestCase):
         self.assertTrue(response.effective_url.endswith("/countdown/2"))
         self.assertTrue(response.headers["Location"].endswith("/countdown/1"))
 
+    def test_default_certificates_exist(self):
+        open(_DEFAULT_CA_CERTS)
+
+    def test_credentials_in_url(self):
+        url = self.get_url("/auth").replace("http://", "http://me:secret@")
+        self.http_client.fetch(url, self.stop)
+        response = self.wait()
+        self.assertEqual("Basic " + base64.b64encode("me:secret"),
+                         response.body)

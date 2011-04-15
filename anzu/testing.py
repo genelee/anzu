@@ -112,6 +112,7 @@ class AsyncTestCase(unittest.TestCase):
                     logging.debug("error closing fd %d", fd, exc_info=True)
             self.io_loop._waker_reader.close()
             self.io_loop._waker_writer.close()
+        super(AsyncTestCase, self).tearDown()
 
     def get_new_ioloop(self):
         '''Creates a new IOLoop for this test.  May be overridden in
@@ -323,7 +324,13 @@ def main():
     from anzu.options import define, options, parse_command_line
 
     define('autoreload', type=bool, default=False)
+    define('httpclient', type=str, default=None)
     argv = [sys.argv[0]] + parse_command_line(sys.argv)
+
+    if options.httpclient:
+        from tornado.httpclient import AsyncHTTPClient
+        AsyncHTTPClient.configure(options.httpclient)
+
     if __name__ == '__main__' and len(argv) == 1:
         print >> sys.stderr, "No tests specified"
         sys.exit(1)

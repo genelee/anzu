@@ -687,6 +687,11 @@ class RequestHandler(object):
     def get_error_html(self, status_code, **kwargs):
         """Override to implement custom error pages.
 
+        get_error_html() should return a string containing the error page,
+        and should not produce output via self.write().  If you use a
+        Tornado template for the error page, you must use
+        "return self.render_string(...)" instead of "self.render()".
+
         If this error was caused by an uncaught exception, the
         exception object can be found in kwargs e.g. kwargs['exception']
         """
@@ -715,7 +720,10 @@ class RequestHandler(object):
     def get_user_locale(self):
         """Override to determine the locale from the authenticated user.
 
-        If None is returned, we use the Accept-Language header.
+        If None is returned, we fall back to get_browser_locale().
+
+        This method should return a tornado.locale.Locale object,
+        most likely obtained via a call like tornado.locale.get("en")
         """
         return None
 
@@ -933,7 +941,7 @@ class RequestHandler(object):
                 raise HTTPError(405)
             # If XSRF cookies are turned on, reject form submissions without
             # the proper cookie
-            if self.request.method not in ("GET", "HEAD") and \
+            if self.request.method not in ("GET", "HEAD", "OPTIONS") and \
                self.application.settings.get("xsrf_cookies"):
                 self.check_xsrf_cookie()
             self.prepare()

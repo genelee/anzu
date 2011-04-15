@@ -32,7 +32,7 @@ if "linux" in sys.platform.lower() and not python_26:
     extensions.append(distutils.core.Extension(
         "anzu.epoll", ["anzu/epoll.c"]))
 
-version = "1.1.1"
+version = "1.2.1"
 
 distutils.core.setup(
     name="anzu",
