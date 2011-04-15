@@ -11,10 +11,10 @@ def import_object(name):
 
     import_object('x.y.z') is equivalent to 'from x.y import z'.
 
-    >>> import tornado.escape
-    >>> import_object('tornado.escape') is tornado.escape
+    >>> import anzu.escape
+    >>> import_object('anzu.escape') is anzu.escape
     True
-    >>> import_object('tornado.escape.utf8') is tornado.escape.utf8
+    >>> import_object('anzu.escape.utf8') is anzu.escape.utf8
     True
     """
     parts = name.split('.')

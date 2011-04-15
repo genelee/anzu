@@ -722,8 +722,8 @@ class RequestHandler(object):
 
         If None is returned, we fall back to get_browser_locale().
 
-        This method should return a tornado.locale.Locale object,
-        most likely obtained via a call like tornado.locale.get("en")
+        This method should return a anzu.locale.Locale object,
+        most likely obtained via a call like anzu.locale.get("en")
         """
         return None
 

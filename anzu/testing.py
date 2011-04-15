@@ -328,7 +328,7 @@ def main():
     argv = [sys.argv[0]] + parse_command_line(sys.argv)
 
     if options.httpclient:
-        from tornado.httpclient import AsyncHTTPClient
+        from anzu.httpclient import AsyncHTTPClient
         AsyncHTTPClient.configure(options.httpclient)
 
     if __name__ == '__main__' and len(argv) == 1:

@@ -35,8 +35,8 @@ from tornado import httputil
 from tornado import ioloop
 from tornado import stack_context
 
-from tornado.escape import utf8
-from tornado.httpclient import HTTPRequest, HTTPResponse, HTTPError, AsyncHTTPClient, main
+from anzu.escape import utf8
+from anzu.httpclient import HTTPRequest, HTTPResponse, HTTPError, AsyncHTTPClient, main
 
 class CurlAsyncHTTPClient(AsyncHTTPClient):
     def initialize(self, io_loop=None, max_clients=10,
