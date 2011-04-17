@@ -28,6 +28,9 @@ except ImportError:
 
 _DEFAULT_DIST_CERTS = '/etc/ssl/certs/ca-certificates.crt'
 _DEFAULT_CA_CERTS = os.path.dirname(__file__) + '/ca-certificates.crt'
+_DEFAULT_CERTS = DEFAULT_DIST_CERTS \
+                 if os.path.exists(_DEFAULT_DIST_CERTS) \
+                 else _DEFAULT_CA_CERTS
 
 class SimpleAsyncHTTPClient(AsyncHTTPClient):
     """Non-blocking HTTP client with no external dependencies.
@@ -143,9 +146,7 @@ class _HTTPConnection(object):
                 if request.ca_certs is not None:
                     ssl_options["ca_certs"] = request.ca_certs
                 else:
-                    ssl_options["ca_certs"] = _DEFAULT_DIST_CERTS \
-                            if os.path.exists(_DEFAULT_DIST_CERTS) \
-                            else _DEFAULT_CA_CERTS
+                    ssl_options["ca_certs"] = _DEFAULT_CERTS
                 self.stream = SSLIOStream(socket.socket(),
                                           io_loop=self.io_loop,
                                           ssl_options=ssl_options)
