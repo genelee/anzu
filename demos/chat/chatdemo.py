@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 #
 # Copyright 2009 Facebook
+# Copyright 2011 W-Mark Kubacki
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -13,6 +14,10 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+
+# Changes to Tornado's demo:
+# * Accepts WebSocket connections as well as long-polling.
+# * Clients see messages of each other.
 
 import logging
 import anzu.auth
