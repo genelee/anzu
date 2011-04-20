@@ -28,7 +28,7 @@ except ImportError:
 
 _DEFAULT_DIST_CERTS = '/etc/ssl/certs/ca-certificates.crt'
 _DEFAULT_CA_CERTS = os.path.dirname(__file__) + '/ca-certificates.crt'
-_DEFAULT_CERTS = DEFAULT_DIST_CERTS \
+_DEFAULT_CERTS = _DEFAULT_DIST_CERTS \
                  if os.path.exists(_DEFAULT_DIST_CERTS) \
                  else _DEFAULT_CA_CERTS
 
