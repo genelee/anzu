@@ -1,1 +1,1 @@
-<div class="message" id="m${ message["id"] }"><b>${ message["from"] | h}: </b>${ message["body"] | h}</div>
+<div class="message" id="m${ message["id"] }"><b>${ message["from"] | h}: </b>${ modules.linkify(message["body"]) }</div>
