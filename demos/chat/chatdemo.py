@@ -82,12 +82,13 @@ class MessageMixin(object):
 
     def cancel_wait(self, callback):
         cls = MessageMixin
-        cls.waiters.remove(callback)
+        if callback in cls.waiters:
+            cls.waiters.remove(callback)
 
     def new_messages(self, messages):
         cls = MessageMixin
         waiters = cls.waiters
-        cls.waiters = []
+        cls.waiters = set()
         logging.info("Sending new message to %r listeners", len(waiters))
         for callback in waiters:
             try:
@@ -158,6 +159,10 @@ class MessagesWebSocket(BaseHandler, anzu.websocket.WebSocketHandler, MessageMix
             return
         self.write_message(dict(messages=messages))
         self.wait_for_messages(self.on_new_messages, cursor=None)
+
+    def on_connection_close(self):
+        logging.debug("Connection to websocket has been closed by %s.", self.current_user["first_name"])
+        self.cancel_wait(self.on_new_messages)
 
 
 @anzu.web.location('/auth/login')
