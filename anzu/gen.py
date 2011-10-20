@@ -1,4 +1,4 @@
-"""``tornado.gen`` is a generator-based interface to make it easier to
+"""``anzu.gen`` is a generator-based interface to make it easier to
 work in an asynchronous environment.  Code using the ``gen`` module
 is technically asynchronous, but it is written as a single generator
 instead of a collection of separate functions.
@@ -78,9 +78,9 @@ def engine(func):
 
     Any generator that yields objects from this module must be wrapped
     in this decorator.  The decorator only works on functions that are
-    already asynchronous.  For `~tornado.web.RequestHandler`
-    ``get``/``post``/etc methods, this means that both the `tornado.gen.engine`
-    and `tornado.web.asynchronous` decorators must be used (in either order).
+    already asynchronous.  For `~anzu.web.RequestHandler`
+    ``get``/``post``/etc methods, this means that both the `anzu.gen.engine`
+    and `anzu.web.asynchronous` decorators must be used (in either order).
     In most other cases, it means that it doesn't make sense to use
     ``gen.engine`` on functions that don't already take a callback argument.
     """
@@ -243,7 +243,7 @@ class _NullYieldPoint(YieldPoint):
         return None
 
 class Runner(object):
-    """Internal implementation of `tornado.gen.engine`.
+    """Internal implementation of `anzu.gen.engine`.
 
     Maintains information about pending callbacks and their results.
     """

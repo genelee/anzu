@@ -5,12 +5,12 @@ import gzip
 import logging
 import socket
 
-from tornado.ioloop import IOLoop
-from tornado.simple_httpclient import SimpleAsyncHTTPClient, _DEFAULT_CA_CERTS
-from tornado.test.httpclient_test import HTTPClientCommonTestCase, ChunkHandler, CountdownHandler, HelloWorldHandler
-from tornado.testing import AsyncHTTPTestCase, LogTrapTestCase
-from tornado.util import b
-from tornado.web import RequestHandler, Application, asynchronous, url
+from anzu.ioloop import IOLoop
+from anzu.simple_httpclient import SimpleAsyncHTTPClient, _DEFAULT_CA_CERTS
+from anzu.test.httpclient_test import HTTPClientCommonTestCase, ChunkHandler, CountdownHandler, HelloWorldHandler
+from anzu.testing import AsyncHTTPTestCase, LogTrapTestCase
+from anzu.util import b
+from anzu.web import RequestHandler, Application, asynchronous, url
 
 class SimpleHTTPClientCommonTestCase(HTTPClientCommonTestCase):
     def get_http_client(self):

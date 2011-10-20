@@ -10,7 +10,7 @@ This module contains three parts:
   from tests that pass and only produces output for failing tests.
 
 * `main()`: A simple test runner (wrapper around unittest.main()) with support
-  for the tornado.autoreload module to rerun the tests when code changes.
+  for the anzu.autoreload module to rerun the tests when code changes.
 
 These components may be used together or independently.  In particular,
 it is safe to combine AsyncTestCase and LogTrapTestCase via multiple
@@ -30,7 +30,7 @@ import sys
 import time
 import unittest
 
-from tornado.ioloop import IOLoop
+from anzu.ioloop import IOLoop
 
 _next_port = 10000
 def get_unused_port():
@@ -303,7 +303,7 @@ def main():
 
     The easiest way to run a test is via the command line::
 
-        python -m tornado.testing tornado.test.stack_context_test
+        python -m anzu.testing anzu.test.stack_context_test
 
     See the standard library unittest module for ways in which tests can
     be specified.
@@ -317,13 +317,13 @@ def main():
         # Runs all tests
         tornado/test/runtests.py
         # Runs one test
-        tornado/test/runtests.py tornado.test.stack_context_test
+        tornado/test/runtests.py anzu.test.stack_context_test
 
     """
     from anzu.options import define, options, parse_command_line
 
     define('autoreload', type=bool, default=False,
-           help="DEPRECATED: use tornado.autoreload.main instead")
+           help="DEPRECATED: use anzu.autoreload.main instead")
     define('httpclient', type=str, default=None)
     argv = [sys.argv[0]] + parse_command_line(sys.argv)
 
@@ -353,8 +353,8 @@ def main():
         if not options.autoreload:
             raise
     if options.autoreload:
-        import tornado.autoreload
-        tornado.autoreload.wait()
+        import anzu.autoreload
+        anzu.autoreload.wait()
 
 if __name__ == '__main__':
     main()

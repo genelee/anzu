@@ -3,11 +3,11 @@
 # and ensure that it doesn't blow up (e.g. with unicode/bytes issues in
 # python 3)
 
-from tornado.auth import OpenIdMixin, OAuthMixin, OAuth2Mixin
-from tornado.escape import json_decode
-from tornado.testing import AsyncHTTPTestCase, LogTrapTestCase
-from tornado.util import b
-from tornado.web import RequestHandler, Application, asynchronous
+from anzu.auth import OpenIdMixin, OAuthMixin, OAuth2Mixin
+from anzu.escape import json_decode
+from anzu.testing import AsyncHTTPTestCase, LogTrapTestCase
+from anzu.util import b
+from anzu.web import RequestHandler, Application, asynchronous
 
 class OpenIdClientLoginHandler(RequestHandler, OpenIdMixin):
     def initialize(self, test):

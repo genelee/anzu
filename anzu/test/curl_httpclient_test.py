@@ -1,4 +1,4 @@
-from tornado.test.httpclient_test import HTTPClientCommonTestCase
+from anzu.test.httpclient_test import HTTPClientCommonTestCase
 
 try:
     import pycurl
@@ -6,7 +6,7 @@ except ImportError:
     pycurl = None
 
 if pycurl is not None:
-    from tornado.curl_httpclient import CurlAsyncHTTPClient
+    from anzu.curl_httpclient import CurlAsyncHTTPClient
 
 class CurlHTTPClientCommonTestCase(HTTPClientCommonTestCase):
     def get_http_client(self):

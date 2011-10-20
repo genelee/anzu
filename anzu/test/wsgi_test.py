@@ -1,9 +1,9 @@
 from wsgiref.validate import validator
 
-from tornado.testing import AsyncHTTPTestCase, LogTrapTestCase
-from tornado.util import b
-from tornado.web import RequestHandler
-from tornado.wsgi import WSGIApplication, WSGIContainer
+from anzu.testing import AsyncHTTPTestCase, LogTrapTestCase
+from anzu.util import b
+from anzu.web import RequestHandler
+from anzu.wsgi import WSGIApplication, WSGIContainer
 
 class WSGIContainerTest(AsyncHTTPTestCase, LogTrapTestCase):
     def wsgi_app(self, environ, start_response):
@@ -49,7 +49,7 @@ class WSGIApplicationTest(AsyncHTTPTestCase, LogTrapTestCase):
 # This is kind of hacky, but run some of the HTTPServer tests through
 # WSGIContainer and WSGIApplication to make sure everything survives
 # repeated disassembly and reassembly.
-from tornado.test.httpserver_test import HTTPConnectionTest
+from anzu.test.httpserver_test import HTTPConnectionTest
 
 class WSGIConnectionTest(HTTPConnectionTest):
     def get_app(self):

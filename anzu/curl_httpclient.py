@@ -25,9 +25,9 @@ import pycurl
 import threading
 import time
 
-from tornado import httputil
-from tornado import ioloop
-from tornado import stack_context
+from anzu import httputil
+from anzu import ioloop
+from anzu import stack_context
 
 from anzu.escape import utf8
 from anzu.httpclient import HTTPRequest, HTTPResponse, HTTPError, AsyncHTTPClient, main

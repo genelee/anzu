@@ -1,11 +1,11 @@
 import functools
-from tornado.escape import url_escape
-from tornado.httpclient import AsyncHTTPClient
-from tornado.testing import AsyncHTTPTestCase, AsyncTestCase, LogTrapTestCase
-from tornado.util import b
-from tornado.web import Application, RequestHandler, asynchronous
+from anzu.escape import url_escape
+from anzu.httpclient import AsyncHTTPClient
+from anzu.testing import AsyncHTTPTestCase, AsyncTestCase, LogTrapTestCase
+from anzu.util import b
+from anzu.web import Application, RequestHandler, asynchronous
 
-from tornado import gen
+from anzu import gen
 
 class GenTest(AsyncTestCase):
     def run_gen(self, f):

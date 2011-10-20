@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 
-from tornado import httpclient, simple_httpclient, netutil
-from tornado.escape import json_decode, utf8, _unicode, recursive_unicode, native_str
-from tornado.httpserver import HTTPServer
-from tornado.httputil import HTTPHeaders
-from tornado.iostream import IOStream
-from tornado.simple_httpclient import SimpleAsyncHTTPClient
-from tornado.testing import AsyncHTTPTestCase, LogTrapTestCase, AsyncTestCase
-from tornado.util import b, bytes_type
-from tornado.web import Application, RequestHandler
+from anzu import httpclient, simple_httpclient, netutil
+from anzu.escape import json_decode, utf8, _unicode, recursive_unicode, native_str
+from anzu.httpserver import HTTPServer
+from anzu.httputil import HTTPHeaders
+from anzu.iostream import IOStream
+from anzu.simple_httpclient import SimpleAsyncHTTPClient
+from anzu.testing import AsyncHTTPTestCase, LogTrapTestCase, AsyncTestCase
+from anzu.util import b, bytes_type
+from anzu.web import Application, RequestHandler
 import os
 import shutil
 import socket

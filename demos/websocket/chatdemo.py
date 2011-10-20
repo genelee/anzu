@@ -19,20 +19,20 @@ Authentication, error handling, etc are left as an exercise for the reader :)
 """
 
 import logging
-import tornado.escape
-import tornado.ioloop
-import tornado.options
-import tornado.web
-import tornado.websocket
+import anzu.escape
+import anzu.ioloop
+import anzu.options
+import anzu.web
+import anzu.websocket
 import os.path
 import uuid
 
-from tornado.options import define, options
+from anzu.options import define, options
 
 define("port", default=8888, help="run on the given port", type=int)
 
 
-class Application(tornado.web.Application):
+class Application(anzu.web.Application):
     def __init__(self):
         handlers = [
             (r"/", MainHandler),
@@ -45,14 +45,14 @@ class Application(tornado.web.Application):
             xsrf_cookies=True,
             autoescape=None,
         )
-        tornado.web.Application.__init__(self, handlers, **settings)
+        anzu.web.Application.__init__(self, handlers, **settings)
 
 
-class MainHandler(tornado.web.RequestHandler):
+class MainHandler(anzu.web.RequestHandler):
     def get(self):
         self.render("index.html", messages=ChatSocketHandler.cache)
 
-class ChatSocketHandler(tornado.websocket.WebSocketHandler):
+class ChatSocketHandler(anzu.websocket.WebSocketHandler):
     waiters = set()
     cache = []
     cache_size = 200
@@ -80,7 +80,7 @@ class ChatSocketHandler(tornado.websocket.WebSocketHandler):
 
     def on_message(self, message):
         logging.info("got message %r", message)
-        parsed = tornado.escape.json_decode(message)
+        parsed = anzu.escape.json_decode(message)
         chat = {
             "id": str(uuid.uuid4()),
             "body": parsed["body"],
@@ -92,10 +92,10 @@ class ChatSocketHandler(tornado.websocket.WebSocketHandler):
 
 
 def main():
-    tornado.options.parse_command_line()
+    anzu.options.parse_command_line()
     app = Application()
     app.listen(options.port)
-    tornado.ioloop.IOLoop.instance().start()
+    anzu.ioloop.IOLoop.instance().start()
 
 
 if __name__ == "__main__":

@@ -1,9 +1,9 @@
-from tornado.escape import json_decode, utf8, to_unicode, recursive_unicode, native_str
-from tornado.iostream import IOStream
-from tornado.template import DictLoader
-from tornado.testing import LogTrapTestCase, AsyncHTTPTestCase
-from tornado.util import b, bytes_type, ObjectDict
-from tornado.web import RequestHandler, authenticated, Application, asynchronous, url, HTTPError, StaticFileHandler, _create_signature
+from anzu.escape import json_decode, utf8, to_unicode, recursive_unicode, native_str
+from anzu.iostream import IOStream
+from anzu.template import DictLoader
+from anzu.testing import LogTrapTestCase, AsyncHTTPTestCase
+from anzu.util import b, bytes_type, ObjectDict
+from anzu.web import RequestHandler, authenticated, Application, asynchronous, url, HTTPError, StaticFileHandler, _create_signature
 
 import binascii
 import logging

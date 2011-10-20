@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 from __future__ import with_statement
 
-from tornado.escape import utf8, _unicode, native_str
-from tornado.httpclient import HTTPRequest, HTTPResponse, HTTPError, AsyncHTTPClient, main
-from tornado.httputil import HTTPHeaders
-from tornado.iostream import IOStream, SSLIOStream
-from tornado import stack_context
-from tornado.util import b
+from anzu.escape import utf8, _unicode, native_str
+from anzu.httpclient import HTTPRequest, HTTPResponse, HTTPError, AsyncHTTPClient, main
+from anzu.httputil import HTTPHeaders
+from anzu.iostream import IOStream, SSLIOStream
+from anzu import stack_context
+from anzu.util import b
 
 import base64
 import collections

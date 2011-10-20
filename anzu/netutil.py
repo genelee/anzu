@@ -22,10 +22,10 @@ import os
 import socket
 import stat
 
-from tornado import process
-from tornado.ioloop import IOLoop
-from tornado.iostream import IOStream, SSLIOStream
-from tornado.platform.auto import set_close_exec
+from anzu import process
+from anzu.ioloop import IOLoop
+from anzu.iostream import IOStream, SSLIOStream
+from anzu.platform.auto import set_close_exec
 
 try:
     import ssl # Python 2.6+
@@ -70,13 +70,13 @@ class TCPServer(object):
     3. `add_sockets`: advanced multi-process::
 
             sockets = bind_sockets(8888)
-            tornado.process.fork_processes(0)
+            anzu.process.fork_processes(0)
             server = TCPServer()
             server.add_sockets(sockets)
             IOLoop.instance().start()
 
        The `add_sockets` interface is more complicated, but it can be
-       used with `tornado.process.fork_processes` to give you more
+       used with `anzu.process.fork_processes` to give you more
        flexibility in when the fork happens.  `add_sockets` can
        also be used in single-process servers if you want to create
        your listening sockets in some way other than
@@ -106,7 +106,7 @@ class TCPServer(object):
         The ``sockets`` parameter is a list of socket objects such as
         those returned by `bind_sockets`.
         `add_sockets` is typically used in combination with that
-        method and `tornado.process.fork_processes` to provide greater
+        method and `anzu.process.fork_processes` to provide greater
         control over the initialization of a multi-process server.
         """
         if self.io_loop is None:
@@ -163,7 +163,7 @@ class TCPServer(object):
         between any server code.
 
         Note that multiple processes are not compatible with the autoreload
-        module (or the ``debug=True`` option to `tornado.web.Application`).
+        module (or the ``debug=True`` option to `anzu.web.Application`).
         When using multiple processes, no IOLoops can be created or
         referenced until after the call to ``TCPServer.start(n)``.
         """

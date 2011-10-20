@@ -21,7 +21,7 @@ import base64
 import anzu.escape
 import anzu.web
 
-from tornado.util import bytes_type, b
+from anzu.util import bytes_type, b
 
 class WebSocketHandler(anzu.web.RequestHandler):
     """Subclass this class to create a basic WebSocket handler.
@@ -85,7 +85,7 @@ class WebSocketHandler(anzu.web.RequestHandler):
             self.ws_connection.accept_connection()
 
         elif self.request.headers.get("Sec-WebSocket-Version"):
-            self.stream.write(tornado.escape.utf8(
+            self.stream.write(anzu.escape.utf8(
                 "HTTP/1.1 426 Upgrade Required\r\n"
                 "Sec-WebSocket-Version: 8\r\n\r\n"))
             self.stream.close()
@@ -204,14 +204,14 @@ class WebSocketProtocol76(WebSocketProtocol):
         # This is necessary when using proxies (such as HAProxy), which
         # need to see the Upgrade headers before passing through the
         # non-HTTP traffic that follows.
-        self.stream.write(tornado.escape.utf8(
+        self.stream.write(anzu.escape.utf8(
             "HTTP/1.1 101 WebSocket Protocol Handshake\r\n"
             "Upgrade: WebSocket\r\n"
             "Connection: Upgrade\r\n"
-            "Server: TornadoServer/%(version)s\r\n"
+            "Server: Anzu/%(version)s\r\n"
             "Sec-WebSocket-Origin: %(origin)s\r\n"
             "Sec-WebSocket-Location: %(scheme)s://%(host)s%(uri)s\r\n\r\n" % (dict(
-                    version=tornado.version,
+                    version=anzu.version,
                     origin=self.request.headers["Origin"],
                     scheme=scheme,
                     host=self.request.host,
@@ -309,7 +309,7 @@ class WebSocketProtocol76(WebSocketProtocol):
     def write_message(self, message):
         """Sends the given message to the client of this Web Socket."""
         if isinstance(message, dict):
-            message = tornado.escape.json_encode(message)
+            message = anzu.escape.json_encode(message)
         if isinstance(message, unicode):
             message = message.encode("utf-8")
         assert isinstance(message, bytes_type)
@@ -318,11 +318,11 @@ class WebSocketProtocol76(WebSocketProtocol):
     def close(self):
         """Closes the WebSocket connection."""
         if self.client_terminated and self._waiting:
-            tornado.ioloop.IOLoop.instance().remove_timeout(self._waiting)
+            anzu.ioloop.IOLoop.instance().remove_timeout(self._waiting)
             self.stream.close()
         else:
             self.stream.write("\xff\x00")
-            self._waiting = tornado.ioloop.IOLoop.instance().add_timeout(
+            self._waiting = anzu.ioloop.IOLoop.instance().add_timeout(
                                 time.time() + 5, self._abort)
 
 
@@ -368,13 +368,13 @@ class WebSocketProtocol8(WebSocketProtocol):
 
     def _challenge_response(self):
         sha1 = hashlib.sha1()
-        sha1.update(tornado.escape.utf8(
+        sha1.update(anzu.escape.utf8(
                 self.request.headers.get("Sec-Websocket-Key")))
         sha1.update(b("258EAFA5-E914-47DA-95CA-C5AB0DC85B11")) # Magic value
-        return tornado.escape.native_str(base64.b64encode(sha1.digest()))
+        return anzu.escape.native_str(base64.b64encode(sha1.digest()))
 
     def _accept_connection(self):
-        self.stream.write(tornado.escape.utf8(
+        self.stream.write(anzu.escape.utf8(
             "HTTP/1.1 101 Switching Protocols\r\n"
             "Upgrade: websocket\r\n"
             "Connection: Upgrade\r\n"
@@ -402,7 +402,7 @@ class WebSocketProtocol8(WebSocketProtocol):
     def write_message(self, message, binary=False):
         """Sends the given message to the client of this Web Socket."""
         if isinstance(message, dict):
-            message = tornado.escape.json_encode(message)
+            message = anzu.escape.json_encode(message)
         if isinstance(message, unicode):
             message = message.encode("utf-8")
         assert isinstance(message, bytes_type)
@@ -496,4 +496,4 @@ class WebSocketProtocol8(WebSocketProtocol):
         """Closes the WebSocket connection."""
         self._write_frame(True, 0x8, b(""))
         self._started_closing_handshake = True
-        self._waiting = tornado.ioloop.IOLoop.instance().add_timeout(time.time() + 5, self._abort)
+        self._waiting = anzu.ioloop.IOLoop.instance().add_timeout(time.time() + 5, self._abort)

@@ -4,13 +4,13 @@ import logging
 import os
 import signal
 import sys
-from tornado.httpclient import HTTPClient, HTTPError
-from tornado.httpserver import HTTPServer
-from tornado.ioloop import IOLoop
-from tornado.netutil import bind_sockets
-from tornado.process import fork_processes, task_id
-from tornado.testing import LogTrapTestCase, get_unused_port
-from tornado.web import RequestHandler, Application
+from anzu.httpclient import HTTPClient, HTTPError
+from anzu.httpserver import HTTPServer
+from anzu.ioloop import IOLoop
+from anzu.netutil import bind_sockets
+from anzu.process import fork_processes, task_id
+from anzu.testing import LogTrapTestCase, get_unused_port
+from anzu.web import RequestHandler, Application
 
 # Not using AsyncHTTPTestCase because we need control over the IOLoop.
 # Logging is tricky here so you may want to replace LogTrapTestCase

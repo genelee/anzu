@@ -17,7 +17,7 @@
 """A module to automatically restart the server when a module is modified.
 
 Most applications should not call this module directly.  Instead, pass the
-keyword argument ``debug=True`` to the `tornado.web.Application` constructor.
+keyword argument ``debug=True`` to the `anzu.web.Application` constructor.
 This will enable autoreload mode as well as checking for changes to templates
 and static resources.
 
@@ -84,7 +84,7 @@ def add_reload_hook(fn):
 
     Note that for open file and socket handles it is generally
     preferable to set the ``FD_CLOEXEC`` flag (using `fcntl` or
-    `tornado.platform.auto.set_close_exec`) instead of using a reload
+    `anzu.platform.auto.set_close_exec`) instead of using a reload
     hook to close them.
     """
     _reload_hooks.append(fn)
@@ -170,19 +170,19 @@ def _reload():
 
 _USAGE = """\
 Usage:
-  python -m tornado.autoreload -m module.to.run [args...]
-  python -m tornado.autoreload path/to/script.py [args...]
+  python -m anzu.autoreload -m module.to.run [args...]
+  python -m anzu.autoreload path/to/script.py [args...]
 """
 def main():
     """Command-line wrapper to re-run a script whenever its source changes.
 
     Scripts may be specified by filename or module name::
 
-        python -m tornado.autoreload -m tornado.test.runtests
-        python -m tornado.autoreload tornado/test/runtests.py
+        python -m anzu.autoreload -m anzu.test.runtests
+        python -m anzu.autoreload tornado/test/runtests.py
 
     Running a script with this wrapper is similar to calling
-    `tornado.autoreload.wait` at the end of the script, but this wrapper
+    `anzu.autoreload.wait` at the end of the script, but this wrapper
     can catch import-time problems like syntax errors that would otherwise
     prevent the script from reaching its call to `wait`.
     """
@@ -232,7 +232,7 @@ def main():
 
 
 if __name__ == "__main__":
-    # If this module is run with "python -m tornado.autoreload", the current
+    # If this module is run with "python -m anzu.autoreload", the current
     # directory is automatically prepended to sys.path, but not if it is
     # run as "path/to/tornado/autoreload.py".  The processing for "-m" rewrites
     # the former to the latter, so subsequent executions won't have the same

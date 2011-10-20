@@ -55,7 +55,7 @@ import re
 import sys
 import time
 
-from tornado.escape import _unicode
+from anzu.escape import _unicode
 
 # For pretty log messages, if available
 try:

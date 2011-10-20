@@ -24,7 +24,7 @@ import time
 
 from binascii import hexlify
 
-from tornado import ioloop
+from anzu import ioloop
 
 try:
     import multiprocessing # Python 2.6+
@@ -73,7 +73,7 @@ def fork_processes(num_processes, max_restarts=100):
     between any server code.
 
     Note that multiple processes are not compatible with the autoreload
-    module (or the debug=True option to `tornado.web.Application`).
+    module (or the debug=True option to `anzu.web.Application`).
     When using multiple processes, no IOLoops can be created or
     referenced until after the call to ``fork_processes``.
 

@@ -18,10 +18,10 @@
 
 Typical applications have little direct interaction with the `HTTPServer`
 class except to start a server at the beginning of the process
-(and even that is often done indirectly via `tornado.web.Application.listen`).
+(and even that is often done indirectly via `anzu.web.Application.listen`).
 
 This module also defines the `HTTPRequest` class which is exposed via
-`tornado.web.RequestHandler.request`.
+`anzu.web.RequestHandler.request`.
 """
 
 import Cookie
@@ -30,12 +30,12 @@ import socket
 import time
 import urlparse
 
-from tornado.escape import utf8, native_str, parse_qs_bytes
-from tornado import httputil
-from tornado import iostream
-from tornado.netutil import TCPServer
-from tornado import stack_context
-from tornado.util import b, bytes_type
+from anzu.escape import utf8, native_str, parse_qs_bytes
+from anzu import httputil
+from anzu import iostream
+from anzu.netutil import TCPServer
+from anzu import stack_context
+from anzu.util import b, bytes_type
 
 try:
     import ssl # Python 2.6+
@@ -92,18 +92,18 @@ class HTTPServer(TCPServer):
        })
 
     `HTTPServer` initialization follows one of three patterns (the
-    initialization methods are defined on `tornado.netutil.TCPServer`):
+    initialization methods are defined on `anzu.netutil.TCPServer`):
 
-    1. `~tornado.netutil.TCPServer.listen`: simple single-process::
+    1. `~anzu.netutil.TCPServer.listen`: simple single-process::
 
             server = HTTPServer(app)
             server.listen(8888)
             IOLoop.instance().start()
 
-       In many cases, `tornado.web.Application.listen` can be used to avoid
+       In many cases, `anzu.web.Application.listen` can be used to avoid
        the need to explicitly create the `HTTPServer`.
 
-    2. `~tornado.netutil.TCPServer.bind`/`~tornado.netutil.TCPServer.start`:
+    2. `~anzu.netutil.TCPServer.bind`/`~anzu.netutil.TCPServer.start`:
        simple multi-process::
 
             server = HTTPServer(app)
@@ -115,20 +115,20 @@ class HTTPServer(TCPServer):
        to the `HTTPServer` constructor.  `start` will always start
        the server on the default singleton `IOLoop`.
 
-    3. `~tornado.netutil.TCPServer.add_sockets`: advanced multi-process::
+    3. `~anzu.netutil.TCPServer.add_sockets`: advanced multi-process::
 
-            sockets = tornado.netutil.bind_sockets(8888)
-            tornado.process.fork_processes(0)
+            sockets = anzu.netutil.bind_sockets(8888)
+            anzu.process.fork_processes(0)
             server = HTTPServer(app)
             server.add_sockets(sockets)
             IOLoop.instance().start()
 
        The `add_sockets` interface is more complicated, but it can be
-       used with `tornado.process.fork_processes` to give you more
+       used with `anzu.process.fork_processes` to give you more
        flexibility in when the fork happens.  `add_sockets` can
        also be used in single-process servers if you want to create
        your listening sockets in some way other than
-       `tornado.netutil.bind_sockets`.
+       `anzu.netutil.bind_sockets`.
 
     """
     def __init__(self, request_callback, no_keep_alive=False, io_loop=None,

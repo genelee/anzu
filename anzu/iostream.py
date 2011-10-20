@@ -25,8 +25,8 @@ import socket
 import sys
 import re
 
-from tornado import ioloop
-from tornado import stack_context
+from anzu import ioloop
+from anzu import stack_context
 from anzu.util import b, bytes_type
 
 try:

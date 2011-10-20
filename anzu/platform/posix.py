@@ -19,8 +19,8 @@
 import fcntl
 import os
 
-from tornado.platform import interface
-from tornado.util import b
+from anzu.platform import interface
+from anzu.util import b
 
 def set_close_exec(fd):
     flags = fcntl.fcntl(fd, fcntl.F_GETFD)

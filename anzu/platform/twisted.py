@@ -18,8 +18,8 @@ A twisted-style reactor for the Tornado IOLoop.
 
 To use it, add the following to your twisted application:
 
-import tornado.platform.twisted
-tornado.platform.twisted.install()
+import anzu.platform.twisted
+anzu.platform.twisted.install()
 from twisted.internet import reactor
 """
 
@@ -35,10 +35,10 @@ from twisted.internet.interfaces import \
 
 from zope.interface import implements
 
-import tornado
-import tornado.ioloop
-from tornado.stack_context import NullContext
-from tornado.ioloop import IOLoop
+import anzu
+import anzu.ioloop
+from anzu.stack_context import NullContext
+from anzu.ioloop import IOLoop
 
 class TornadoDelayedCall(object):
     """
@@ -93,7 +93,7 @@ class TornadoReactor(PosixReactorBase):
 
     def __init__(self, io_loop=None):
         if not io_loop:
-            io_loop = tornado.ioloop.IOLoop.instance()
+            io_loop = anzu.ioloop.IOLoop.instance()
         self._io_loop = io_loop
         self._readers = {}
         self._writers = {}
@@ -298,7 +298,7 @@ def install(io_loop=None):
     Install the Tornado reactor.
     """
     if not io_loop:
-        io_loop = tornado.ioloop.IOLoop.instance()
+        io_loop = anzu.ioloop.IOLoop.instance()
     reactor = TornadoReactor(io_loop)
     from twisted.internet.main import installReactor
     installReactor(reactor)

@@ -1,8 +1,8 @@
-from tornado import netutil
-from tornado.iostream import IOStream
-from tornado.testing import AsyncHTTPTestCase, LogTrapTestCase, get_unused_port
-from tornado.util import b
-from tornado.web import RequestHandler, Application
+from anzu import netutil
+from anzu.iostream import IOStream
+from anzu.testing import AsyncHTTPTestCase, LogTrapTestCase, get_unused_port
+from anzu.util import b
+from anzu.web import RequestHandler, Application
 import socket
 import time
 

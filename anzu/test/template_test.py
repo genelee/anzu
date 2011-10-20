@@ -1,7 +1,7 @@
-from tornado.escape import utf8, native_str
-from tornado.template import Template, DictLoader, ParseError
-from tornado.testing import LogTrapTestCase
-from tornado.util import b, bytes_type
+from anzu.escape import utf8, native_str
+from anzu.template import Template, DictLoader, ParseError
+from anzu.testing import LogTrapTestCase
+from anzu.util import b, bytes_type
 
 class TemplateTest(LogTrapTestCase):
     def test_simple(self):

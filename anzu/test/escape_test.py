@@ -3,8 +3,8 @@
 import anzu.escape
 import unittest
 
-from tornado.escape import utf8, xhtml_escape, xhtml_unescape, url_escape, url_unescape, to_unicode, json_decode, json_encode
-from tornado.util import b
+from anzu.escape import utf8, xhtml_escape, xhtml_unescape, url_escape, url_unescape, to_unicode, json_decode, json_encode
+from anzu.util import b
 
 linkify_tests = [
     # (input, linkify_kwargs, expected_output)

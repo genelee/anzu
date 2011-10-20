@@ -92,8 +92,8 @@ except:
 from anzu import escape
 from anzu import locale
 from anzu import stack_context
-from tornado.escape import utf8, _unicode
-from tornado.util import b, bytes_type, import_object, ObjectDict
+from anzu.escape import utf8, _unicode
+from anzu.util import b, bytes_type, import_object, ObjectDict
 
 try:
     from io import BytesIO  # python 3
@@ -208,7 +208,7 @@ class RequestHandler(object):
 
     def clear(self):
         """Resets all headers and content for this response."""
-        # The performance cost of tornado.httputil.HTTPHeaders is significant
+        # The performance cost of anzu.httputil.HTTPHeaders is significant
         # (slowing down a benchmark with a trivial handler by more than 10%),
         # and its case-normalization is not generally necessary for
         # headers we generate on the server side, so use a plain dict

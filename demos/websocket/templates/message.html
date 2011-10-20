@@ -1,2 +1,2 @@
-{% import tornado.escape %}
-<div class="message" id="m{{ message["id"] }}">{{ tornado.escape.linkify(message["body"]) }}</div>
+{% import anzu.escape %}
+<div class="message" id="m{{ message["id"] }}">{{ anzu.escape.linkify(message["body"]) }}</div>

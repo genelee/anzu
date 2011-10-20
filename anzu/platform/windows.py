@@ -6,8 +6,8 @@ import ctypes.wintypes
 import socket
 import errno
 
-from tornado.platform import interface
-from tornado.util import b
+from anzu.platform import interface
+from anzu.util import b
 
 # See: http://msdn.microsoft.com/en-us/library/ms724935(VS.85).aspx
 SetHandleInformation = ctypes.windll.kernel32.SetHandleInformation

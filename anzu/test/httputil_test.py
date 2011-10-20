@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
-from tornado.httputil import url_concat, parse_multipart_form_data, HTTPHeaders
-from tornado.escape import utf8
-from tornado.testing import LogTrapTestCase
-from tornado.util import b
+from anzu.httputil import url_concat, parse_multipart_form_data, HTTPHeaders
+from anzu.escape import utf8
+from anzu.testing import LogTrapTestCase
+from anzu.util import b
 import logging
 import unittest
 

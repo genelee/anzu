@@ -30,8 +30,8 @@ See the individual service classes below for complete documentation.
 
 Example usage for Google OpenID::
 
-    class GoogleHandler(tornado.web.RequestHandler, tornado.auth.GoogleMixin):
-        @tornado.web.asynchronous
+    class GoogleHandler(anzu.web.RequestHandler, anzu.auth.GoogleMixin):
+        @anzu.web.asynchronous
         def get(self):
             if self.get_argument("openid.mode", None):
                 self.get_authenticated_user(self.async_callback(self._on_auth))
@@ -54,10 +54,10 @@ import urllib
 import urlparse
 import uuid
 
-from tornado import httpclient
-from tornado import escape
-from tornado.httputil import url_concat
-from tornado.util import bytes_type, b
+from anzu import httpclient
+from anzu import escape
+from anzu.httputil import url_concat
+from anzu.util import bytes_type, b
 
 class OpenIdMixin(object):
     """Abstract implementation of OpenID and Attribute Exchange.
@@ -936,8 +936,8 @@ class FacebookGraphMixin(OAuth2Mixin):
 
       Example usage::
 
-          class FacebookGraphLoginHandler(LoginHandler, tornado.auth.FacebookGraphMixin):
-            @tornado.web.asynchronous
+          class FacebookGraphLoginHandler(LoginHandler, anzu.auth.FacebookGraphMixin):
+            @anzu.web.asynchronous
             def get(self):
                 if self.get_argument("code", False):
                     self.get_authenticated_user(

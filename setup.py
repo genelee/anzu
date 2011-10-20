@@ -34,7 +34,7 @@ if "linux" in sys.platform.lower() and not python_26:
     extensions.append(distutils.core.Extension(
         "anzu.epoll", ["anzu/epoll.c"]))
 
-version = "2.1.1git"
+from anzu import version
 
 if major >= 3:
     import setuptools  # setuptools is required for use_2to3

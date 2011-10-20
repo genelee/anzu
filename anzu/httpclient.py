@@ -126,7 +126,7 @@ class AsyncHTTPClient(object):
         io_loop = io_loop or IOLoop.instance()
         if cls is AsyncHTTPClient:
             if cls._impl_class is None:
-                from tornado.simple_httpclient import SimpleAsyncHTTPClient
+                from anzu.simple_httpclient import SimpleAsyncHTTPClient
                 AsyncHTTPClient._impl_class = SimpleAsyncHTTPClient
             impl = AsyncHTTPClient._impl_class
         else:
@@ -185,7 +185,7 @@ class AsyncHTTPClient(object):
 
         Example::
 
-           AsyncHTTPClient.configure("tornado.curl_httpclient.CurlAsyncHTTPClient")
+           AsyncHTTPClient.configure("anzu.curl_httpclient.CurlAsyncHTTPClient")
         """
         if isinstance(impl, (unicode, bytes_type)):
             impl = import_object(impl)
@@ -215,7 +215,7 @@ class HTTPRequest(object):
         :arg string url: URL to fetch
         :arg string method: HTTP method, e.g. "GET" or "POST"
         :arg headers: Additional HTTP headers to pass on the request
-        :type headers: `~tornado.httputil.HTTPHeaders` or `dict`
+        :type headers: `~anzu.httputil.HTTPHeaders` or `dict`
         :arg string auth_username: Username for HTTP "Basic" authentication
         :arg string auth_password: Password for HTTP "Basic" authentication
         :arg float connect_timeout: Timeout for initial connection in seconds

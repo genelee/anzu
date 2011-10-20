@@ -20,7 +20,7 @@ WSGI is the Python standard for web servers, and allows for interoperability
 between Tornado and other Python web frameworks and servers.  This module
 provides WSGI support in two ways:
 
-* `WSGIApplication` is a version of `tornado.web.Application` that can run
+* `WSGIApplication` is a version of `anzu.web.Application` that can run
   inside a WSGI server.  This is useful for running a Tornado app on another
   HTTP server, such as Google App Engine.  See the `WSGIApplication` class
   documentation for limitations that apply.
@@ -35,14 +35,14 @@ import httplib
 import logging
 import sys
 import time
-import tornado
+import anzu
 import urllib
 
-from tornado import escape
-from tornado import httputil
-from tornado import web
-from tornado.escape import native_str, utf8
-from tornado.util import b
+from anzu import escape
+from anzu import httputil
+from anzu import web
+from anzu.escape import native_str, utf8
+from anzu.util import b
 
 try:
     from io import BytesIO  # python 3
@@ -50,7 +50,7 @@ except ImportError:
     from cStringIO import StringIO as BytesIO  # python 2
 
 class WSGIApplication(web.Application):
-    """A WSGI equivalent of `tornado.web.Application`.
+    """A WSGI equivalent of `anzu.web.Application`.
 
     WSGIApplication is very similar to web.Application, except no
     asynchronous methods are supported (since WSGI does not support
@@ -102,7 +102,7 @@ class WSGIApplication(web.Application):
 
 
 class HTTPRequest(object):
-    """Mimics `tornado.httpserver.HTTPRequest` for WSGI applications."""
+    """Mimics `anzu.httpserver.HTTPRequest` for WSGI applications."""
     def __init__(self, environ):
         """Parses the given WSGI environ to construct the request."""
         self.method = environ["REQUEST_METHOD"]
@@ -205,7 +205,7 @@ class WSGIContainer(object):
     This class is intended to let other frameworks (Django, web.py, etc)
     run on the Anzu HTTP server and I/O loop.
 
-    The `tornado.web.FallbackHandler` class is often useful for mixing
+    The `anzu.web.FallbackHandler` class is often useful for mixing
     Tornado and WSGI apps in the same server.  See
     https://github.com/bdarnell/django-tornado-demo for a complete example.
     """
@@ -249,7 +249,7 @@ class WSGIContainer(object):
 
     @staticmethod
     def environ(request):
-        """Converts a `tornado.httpserver.HTTPRequest` to a WSGI environment.
+        """Converts a `anzu.httpserver.HTTPRequest` to a WSGI environment.
         """
         hostport = request.host.split(":")
         if len(hostport) == 2:

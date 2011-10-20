@@ -26,7 +26,7 @@ try:
     import fcntl
     import twisted
     from twisted.internet.interfaces import IReadDescriptor, IWriteDescriptor
-    from tornado.platform.twisted import TornadoReactor
+    from anzu.platform.twisted import TornadoReactor
     from zope.interface import implements
 except ImportError:
     fcntl = None
@@ -34,9 +34,9 @@ except ImportError:
     IReadDescriptor = IWriteDescriptor = None
     def implements(f): pass
 
-from tornado.ioloop import IOLoop
-from tornado.platform.auto import set_close_exec
-from tornado.util import import_object
+from anzu.ioloop import IOLoop
+from anzu.platform.auto import set_close_exec
+from anzu.util import import_object
 
 class ReactorWhenRunningTest(unittest.TestCase):
     def setUp(self):
@@ -304,7 +304,7 @@ else:
         except (ImportError, AttributeError):
             continue
         class TornadoTest(test):
-            _reactors = ["tornado.platform.twisted._TestReactor"]
+            _reactors = ["anzu.platform.twisted._TestReactor"]
         TornadoTest.__name__ = test.__name__
         globals().update(TornadoTest.makeTestCaseClasses())
 

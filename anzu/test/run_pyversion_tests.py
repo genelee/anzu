@@ -25,7 +25,7 @@ def main():
         if not exists_on_path(interpreter):
             print "Interpreter not found, skipping..."
             continue
-        args = [interpreter, "-m", "tornado.test.runtests"] + sys.argv[1:]
+        args = [interpreter, "-m", "anzu.test.runtests"] + sys.argv[1:]
         ret = subprocess.call(args)
         if ret != 0:
             print "Tests on %s failed with exit code %d" % (interpreter, ret)

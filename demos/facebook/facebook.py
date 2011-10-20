@@ -78,7 +78,7 @@ class AuthLoginHandler(BaseHandler, anzu.auth.FacebookGraphMixin):
     def get(self):
         my_url = (self.request.protocol + "://" + self.request.host +
                   "/auth/login?next=" +
-                  tornado.escape.url_escape(self.get_argument("next", "/")))
+                  anzu.escape.url_escape(self.get_argument("next", "/")))
         if self.get_argument("code", False):
             self.get_authenticated_user(
                 redirect_uri=my_url,
