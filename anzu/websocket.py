@@ -480,9 +480,14 @@ class WebSocketProtocol8(WebSocketProtocol):
         elif opcode == 0x8:
             # Close
             self.client_terminated = True
-            if not self._started_closing_handshake:
-                self._write_frame(True, 0x8, b(""))
-            self.stream.close()
+            try:
+                if not self._started_closing_handshake:
+                    self._write_frame(True, 0x8, b(""))
+                self.stream.close()
+            except IOError, e:
+                # client closed the connection w/o the handshake
+                # Reproducible with Chrome 14.0.835.202 when changing pages.
+                pass
         elif opcode == 0x9:
             # Ping
             self._write_frame(True, 0xA, data)
