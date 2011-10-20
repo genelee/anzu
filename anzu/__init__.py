@@ -17,5 +17,5 @@
 
 """The Anzu web server and tools."""
 
-version = "1.2.1"
-version_info = (1, 2, 1)
+version = "2.1.1git"
+version_info = (2, 1, 1)

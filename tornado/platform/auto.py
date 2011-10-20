@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright 2009 Facebook
+# Copyright 2011 Facebook
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -14,9 +14,18 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import anzu.web
+"""Implementation of platform-specific functionality.
 
+For each function or class described in `tornado.platform.interface`,
+the appropriate platform-specific implementation exists in this module.
+Most code that needs access to this functionality should do e.g.::
 
-class Entry(anzu.web.UIModule):
-    def render(self):
-        return '<div>ENTRY</div>'
+    from tornado.platform.auto import set_close_exec
+"""
+
+import os
+
+if os.name == 'nt':
+    from tornado.platform.windows import set_close_exec, Waker
+else:
+    from tornado.platform.posix import set_close_exec, Waker

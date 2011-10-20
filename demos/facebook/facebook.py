@@ -14,7 +14,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import logging
 import os.path
 import anzu.auth
 import anzu.escape
@@ -22,7 +21,6 @@ import anzu.httpserver
 import anzu.ioloop
 import anzu.options
 import anzu.web
-import uimodules
 
 from anzu.options import define, options
 
@@ -44,8 +42,9 @@ class Application(anzu.web.Application):
             facebook_api_key=options.facebook_api_key,
             facebook_secret=options.facebook_secret,
             mako_module_directory='/tmp/mako_modules',
-            ui_modules= {"Post": PostModule},
+            ui_modules={"Post": PostModule},
             debug=True,
+            autoescape=None,
         )
         anzu.web.Application.__init__(self, **settings)
 
@@ -58,33 +57,39 @@ class BaseHandler(anzu.web.RequestHandler):
 
 
 @anzu.web.location('/')
-class MainHandler(BaseHandler, anzu.auth.FacebookMixin):
+class MainHandler(BaseHandler, anzu.auth.FacebookGraphMixin):
     @anzu.web.authenticated
     @anzu.web.asynchronous
     def get(self):
-        self.facebook_request(
-            method="stream.get",
-            callback=self.async_callback(self._on_stream),
-            session_key=self.current_user["session_key"])
+        self.facebook_request("/me/home", self._on_stream,
+                              access_token=self.current_user["access_token"])
 
     def _on_stream(self, stream):
         if stream is None:
             # Session may have expired
             self.redirect("/auth/login")
             return
-        # Turn profiles into a dict mapping id => profile
-        stream["profiles"] = dict((p["id"], p) for p in stream["profiles"])
         self.render("stream.html", stream=stream)
 
 
 @anzu.web.location('/auth/login')
-class AuthLoginHandler(BaseHandler, anzu.auth.FacebookMixin):
+class AuthLoginHandler(BaseHandler, anzu.auth.FacebookGraphMixin):
     @anzu.web.asynchronous
     def get(self):
-        if self.get_argument("session", None):
-            self.get_authenticated_user(self.async_callback(self._on_auth))
+        my_url = (self.request.protocol + "://" + self.request.host +
+                  "/auth/login?next=" +
+                  tornado.escape.url_escape(self.get_argument("next", "/")))
+        if self.get_argument("code", False):
+            self.get_authenticated_user(
+                redirect_uri=my_url,
+                client_id=self.settings["facebook_api_key"],
+                client_secret=self.settings["facebook_secret"],
+                code=self.get_argument("code"),
+                callback=self._on_auth)
             return
-        self.authorize_redirect("read_stream")
+        self.authorize_redirect(redirect_uri=my_url,
+                                client_id=self.settings["facebook_api_key"],
+                                extra_params={"scope": "read_stream"})
 
     def _on_auth(self, user):
         if not user:
@@ -94,25 +99,15 @@ class AuthLoginHandler(BaseHandler, anzu.auth.FacebookMixin):
 
 
 @anzu.web.location('/auth/logout')
-class AuthLogoutHandler(BaseHandler, anzu.auth.FacebookMixin):
-    @anzu.web.asynchronous
+class AuthLogoutHandler(BaseHandler, anzu.auth.FacebookGraphMixin):
     def get(self):
         self.clear_cookie("user")
-        if not self.current_user:
-            self.redirect(self.get_argument("next", "/"))
-            return
-        self.facebook_request(
-            method="auth.revokeAuthorization",
-            callback=self.async_callback(self._on_deauthorize),
-            session_key=self.current_user["session_key"])
-
-    def _on_deauthorize(self, response):
         self.redirect(self.get_argument("next", "/"))
 
 
 class PostModule(anzu.web.UIModule):
-    def render(self, post, actor):
-        return self.render_string("modules/post.html", post=post, actor=actor)
+    def render(self, post):
+        return self.render_string("modules/post.html", post=post)
 
 
 def main():

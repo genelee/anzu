@@ -24,6 +24,8 @@ try:
 except ImportError:
     pass
 
+kwargs = {}
+
 # Build the epoll extension for Linux systems with Python < 2.6
 extensions = []
 major, minor = sys.version_info[:2]
@@ -32,15 +34,19 @@ if "linux" in sys.platform.lower() and not python_26:
     extensions.append(distutils.core.Extension(
         "anzu.epoll", ["anzu/epoll.c"]))
 
-version = "1.2.1"
+version = "2.1.1git"
+
+if major >= 3:
+    import setuptools  # setuptools is required for use_2to3
+    kwargs["use_2to3"] = True
 
 distutils.core.setup(
     name="anzu",
     version=version,
-    packages = ["anzu", "anzu.test"],
+    packages = ["anzu", "anzu.test", "anzu.platform"],
     package_data = {
         "anzu": ["ca-certificates.crt"],
-        "anzu.test": ["README.rst", "test.crt", "test.key"],
+        "anzu.test": ["README.rst", "test.crt", "test.key", "static/robots.txt"],
         },
     ext_modules = extensions,
     author="W-Mark Kubacki",
@@ -53,4 +59,5 @@ distutils.core.setup(
         "Mako >= 0.2",
         "FormEncode >= 1.2.2",
     ],
+    **kwargs
 )

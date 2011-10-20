@@ -44,6 +44,7 @@ class Application(anzu.web.Application):
             xsrf_cookies=True,
             cookie_secret="11oETzKXQAGaYdkL5gEmGeJJFuYh7EQnp2XdTP1o/Vo=",
             login_url="/auth/login",
+            autoescape=None,
         )
         anzu.web.Application.__init__(self, **settings)
 

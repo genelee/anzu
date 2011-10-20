@@ -1,29 +1,17 @@
 <div class="post">
   <div class="picture">
-    <a href="${ actor["url"] }"><img src="${ actor["pic_square"] }"/></a>
+    ${ author_url="http://www.facebook.com/profile.php?id=" + escape(post["from"]["id"]) }
+    <a href="${ author_url }"><img src="//graph.facebook.com/${ post["from"]["id"] | h}/picture?type=square"/></a>
   </div>
   <div class="body">
-    <a href="${ actor["url"] }" class="actor">${ actor["name"] | h}</a>
-    % if post["message"]:
+    <a href="${ author_url }" class="actor">${ post["from"]["name"] | h}</a>
+    % if "message" in post:
       <span class="message">${ post["message"] | h}</span>
     % endif
-    % if post["attachment"]:
-      <div class="attachment">
-        % if post["attachment"].get("name"):
-          <div class="name"><a href="${ post["attachment"]["href"] }">${ post["attachment"]["name"] | h}</a></div>
-        % endif
-        % if post["attachment"].get("description"):
-          <div class="description">${ post["attachment"]["description"] }</div>
-        % endif
-        % for media in filter(lambda m: m.get("src") and m["type"] in ("photo", "link"), post["attachment"].get("media", [])):
-          <span class="media">
-            <a href="${ media["href"] }"><img src="${ media["src"] }" alt="${ media.get("alt", "") | h}"/></a>
-          </span>
-        % endfor
-      </div>
-    % endif
     <div class="meta">
-      <a href="${ post["permalink"] }" class="permalink">${ locale.format_date(post["created_time"]) }</a>
+      % if "actions" in post:
+        <a href="${ post["actions"][0]["link"] | h}" class="permalink">${ locale.format_date(datetime.datetime.strptime(post["created_time"], "%Y-%m-%dT%H:%M:%S+0000")) }</a>
+      % endif
     </div>
   </div>
 </div>

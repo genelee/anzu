@@ -43,6 +43,7 @@ class Application(anzu.web.Application):
             static_path=os.path.join(os.path.dirname(__file__), "static"),
             xsrf_cookies=True,
             debug=True,
+            autoescape="xhtml_escape",
         )
         anzu.web.Application.__init__(self, **settings)
 
@@ -62,7 +63,7 @@ class MainHandler(BaseHandler):
 
 
 class MessageMixin(object):
-    waiters = []
+    waiters = set()
     cache = []
     cache_size = 200
 
@@ -77,7 +78,11 @@ class MessageMixin(object):
             if recent:
                 callback(recent)
                 return
-        cls.waiters.append(callback)
+        cls.waiters.add(callback)
+
+    def cancel_wait(self, callback):
+        cls = MessageMixin
+        cls.waiters.remove(callback)
 
     def new_messages(self, messages):
         cls = MessageMixin
@@ -117,7 +122,7 @@ class MessageUpdatesHandler(BaseHandler, MessageMixin):
     @anzu.web.asynchronous
     def post(self):
         cursor = self.get_argument("cursor", None)
-        self.wait_for_messages(self.async_callback(self.on_new_messages),
+        self.wait_for_messages(self.on_new_messages,
                                cursor=cursor)
 
     def on_new_messages(self, messages):
@@ -125,6 +130,9 @@ class MessageUpdatesHandler(BaseHandler, MessageMixin):
         if self.request.connection.stream.closed():
             return
         self.finish(dict(messages=messages))
+
+    def on_connection_close(self):
+        self.cancel_wait(self.on_new_messages)
 
 
 @anzu.web.location('/a/message/stream')
