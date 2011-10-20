@@ -93,7 +93,7 @@ from anzu import escape
 from anzu import locale
 from anzu import stack_context
 from anzu.escape import utf8, _unicode
-from anzu.util import b, bytes_type, import_object, ObjectDict
+from anzu.util import b, baseN, bytes_type, import_object, ObjectDict
 
 try:
     from io import BytesIO  # python 3
@@ -1701,9 +1701,14 @@ class StaticFileHandler(RequestHandler):
         abs_path = os.path.join(settings["static_path"], path)
         if abs_path not in hashes:
             try:
-                f = open(abs_path, "rb")
-                hashes[abs_path] = hashlib.md5(f.read()).hexdigest()
-                f.close()
+                if has_murmurhash2:
+                    hash = murmur.file_hash(abs_path)
+                    hashes[path] = baseN(hash, 36)
+                else:
+                    f = open(abs_path, "rb")
+                    hashes[abs_path] = baseN(int(
+                        hashlib.md5(f.read()).hexdigest(), 16), 36)
+                    f.close()
             except Exception:
                 logging.error("Could not open static file %r", path)
                 hashes[abs_path] = None
