@@ -249,9 +249,9 @@ class _HTTPConnection(object):
             self.request.headers["User-Agent"] = self.request.user_agent
         if not self.request.allow_nonstandard_methods:
             if self.request.method in ("POST", "PUT"):
-            assert self.request.body is not None
-        else:
-            assert self.request.body is None
+                assert self.request.body is not None
+            else:
+                assert self.request.body is None
         if self.request.body is not None:
             self.request.headers["Content-Length"] = str(len(
                     self.request.body))
@@ -301,7 +301,7 @@ class _HTTPConnection(object):
         self._run_callback(HTTPResponse(
                 self.request, 599,
                 request_time=time.time() - self.start_time,
-                                  error=HTTPError(599, "Connection closed")))
+                error=HTTPError(599, "Connection closed")))
 
     def _on_headers(self, data):
         data = native_str(data.decode("latin1"))

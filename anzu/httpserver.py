@@ -129,6 +129,7 @@ class HTTPServer(TCPServer):
        also be used in single-process servers if you want to create
        your listening sockets in some way other than
        `tornado.netutil.bind_sockets`.
+
     """
     def __init__(self, request_callback, no_keep_alive=False, io_loop=None,
                  xheaders=False, ssl_options=None, **kwargs):
@@ -139,8 +140,8 @@ class HTTPServer(TCPServer):
                            **kwargs)
 
     def handle_stream(self, stream, address):
-                HTTPConnection(stream, address, self.request_callback,
-                               self.no_keep_alive, self.xheaders)
+        HTTPConnection(stream, address, self.request_callback,
+                       self.no_keep_alive, self.xheaders)
 
 class _BadRequestException(Exception):
     """Exception class for malformed HTTP requests."""
@@ -330,8 +331,8 @@ class HTTPRequest(object):
 
     .. attribute:: arguments
 
-    GET/POST arguments are available in the arguments property, which
-    maps arguments names to lists of values (to support multiple values
+       GET/POST arguments are available in the arguments property, which
+       maps arguments names to lists of values (to support multiple values
        for individual names). Names are of type `str`, while arguments
        are byte strings.  Note that this is different from
        `RequestHandler.get_argument`, which returns argument values as
@@ -339,15 +340,15 @@ class HTTPRequest(object):
 
     .. attribute:: files
 
-    File uploads are available in the files property, which maps file
+       File uploads are available in the files property, which maps file
        names to lists of :class:`HTTPFile`.
 
     .. attribute:: connection
 
-    An HTTP request is attached to a single HTTP connection, which can
-    be accessed through the "connection" attribute. Since connections
-    are typically kept open in HTTP/1.1, multiple requests can be handled
-    sequentially on a single connection.
+       An HTTP request is attached to a single HTTP connection, which can
+       be accessed through the "connection" attribute. Since connections
+       are typically kept open in HTTP/1.1, multiple requests can be handled
+       sequentially on a single connection.
     """
     def __init__(self, method, uri, version="HTTP/1.0", headers=None,
                  body=None, remote_ip=None, protocol=None, host=None,

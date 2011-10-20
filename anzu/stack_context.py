@@ -61,18 +61,18 @@ class _State(threading.local):
 _state = _State()
 
 class StackContext(object):
-        '''Establishes the given context as a StackContext that will be transferred.
+    '''Establishes the given context as a StackContext that will be transferred.
 
-        Note that the parameter is a callable that returns a context
-        manager, not the context itself.  That is, where for a
+    Note that the parameter is a callable that returns a context
+    manager, not the context itself.  That is, where for a
     non-transferable context manager you would say::
 
-          with my_context():
+      with my_context():
 
     StackContext takes the function itself rather than its result::
 
-          with StackContext(my_context):
-        '''
+      with StackContext(my_context):
+    '''
     def __init__(self, context_factory):
         self.context_factory = context_factory
 
@@ -82,7 +82,7 @@ class StackContext(object):
     def __enter__(self):
         self.old_contexts = _state.contexts
         # _state.contexts is a tuple of (class, arg) pairs
-        _state.contexts = (self.old_contexts + 
+        _state.contexts = (self.old_contexts +
                            ((StackContext, self.context_factory),))
         try:
             self.context = self.context_factory()
@@ -98,18 +98,18 @@ class StackContext(object):
             _state.contexts = self.old_contexts
 
 class ExceptionStackContext(object):
-        '''Specialization of StackContext for exception handling.
+    '''Specialization of StackContext for exception handling.
 
-        The supplied exception_handler function will be called in the
-        event of an uncaught exception in this context.  The semantics are
-        similar to a try/finally clause, and intended use cases are to log
-        an error, close a socket, or similar cleanup actions.  The
-        exc_info triple (type, value, traceback) will be passed to the
-        exception_handler function.
+    The supplied exception_handler function will be called in the
+    event of an uncaught exception in this context.  The semantics are
+    similar to a try/finally clause, and intended use cases are to log
+    an error, close a socket, or similar cleanup actions.  The
+    exc_info triple (type, value, traceback) will be passed to the
+    exception_handler function.
 
-        If the exception handler returns true, the exception will be
-        consumed and will not be propagated to other exception handlers.
-        '''
+    If the exception handler returns true, the exception will be
+    consumed and will not be propagated to other exception handlers.
+    '''
     def __init__(self, exception_handler):
         self.exception_handler = exception_handler
 
@@ -222,4 +222,3 @@ def _nested(*managers):
             # the right information. Another exception may
             # have been raised and caught by an exit method
             raise exc[0], exc[1], exc[2]
-

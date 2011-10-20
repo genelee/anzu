@@ -62,7 +62,7 @@ class HTTPClient(object):
     def close(self):
         """Closes the HTTPClient, freeing any resources used."""
         if not self._closed:
-        self._async_client.close()
+            self._async_client.close()
             self._io_loop.close()
             self._closed = True
 
@@ -124,13 +124,13 @@ class AsyncHTTPClient(object):
     def __new__(cls, io_loop=None, max_clients=10, force_instance=False,
                 **kwargs):
         io_loop = io_loop or IOLoop.instance()
-            if cls is AsyncHTTPClient:
-                if cls._impl_class is None:
-                    from anzu.simple_httpclient import SimpleAsyncHTTPClient
-                    AsyncHTTPClient._impl_class = SimpleAsyncHTTPClient
+        if cls is AsyncHTTPClient:
+            if cls._impl_class is None:
+                from tornado.simple_httpclient import SimpleAsyncHTTPClient
+                AsyncHTTPClient._impl_class = SimpleAsyncHTTPClient
             impl = AsyncHTTPClient._impl_class
-            else:
-                impl = cls
+        else:
+            impl = cls
         if io_loop in impl._async_clients() and not force_instance:
             return impl._async_clients()[io_loop]
         else:

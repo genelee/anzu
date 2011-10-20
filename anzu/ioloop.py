@@ -247,8 +247,8 @@ class IOLoop(object):
             # Prevent IO event starvation by delaying new callbacks
             # to the next iteration of the event loop.
             with self._callback_lock:
-            callbacks = self._callbacks
-            self._callbacks = []
+                callbacks = self._callbacks
+                self._callbacks = []
             for callback in callbacks:
                 self._run_callback(callback)
 
@@ -260,10 +260,10 @@ class IOLoop(object):
                         heapq.heappop(self._timeouts)
                     elif self._timeouts[0].deadline <= now:
                         timeout = heapq.heappop(self._timeouts)
-                    self._run_callback(timeout.callback)
+                        self._run_callback(timeout.callback)
                     else:
-                    milliseconds = self._timeouts[0].deadline - now
-                    poll_timeout = min(milliseconds, poll_timeout)
+                        milliseconds = self._timeouts[0].deadline - now
+                        poll_timeout = min(milliseconds, poll_timeout)
                         break
 
             if self._callbacks:
@@ -310,7 +310,7 @@ class IOLoop(object):
                 except (KeyboardInterrupt, SystemExit):
                     raise
                 except (OSError, IOError, EnvironmentError), e:
-                    if e.args[0] == errno.EPIPE:
+                    if e.errno == errno.EPIPE:
                         # Happens when the client closes the connection
                         pass
                     else:
@@ -383,7 +383,7 @@ class IOLoop(object):
         """
         with self._callback_lock:
             list_empty = not self._callbacks
-        self._callbacks.append(stack_context.wrap(callback))
+            self._callbacks.append(stack_context.wrap(callback))
         if list_empty and thread.get_ident() != self._thread_ident:
             # If we're in the IOLoop's thread, we know it's not currently
             # polling.  If we're not, and we added the first callback to an
@@ -420,7 +420,7 @@ class _Timeout(object):
 
     def __init__(self, deadline, callback):
         if isinstance(deadline, (int, long, float)):
-        self.deadline = deadline
+            self.deadline = deadline
         elif isinstance(deadline, datetime.timedelta):
             self.deadline = time.time() + _Timeout.timedelta_to_seconds(deadline)
         else:

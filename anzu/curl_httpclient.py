@@ -388,7 +388,7 @@ def _curl_setup_request(curl, request, buffer, headers):
         curl.setopt(pycurl.HTTPAUTH, pycurl.HTTPAUTH_BASIC)
         curl.setopt(pycurl.USERPWD, userpwd)
         logging.debug("%s %s (username: %r)", request.method, request.url,
-                     request.auth_username)
+                      request.auth_username)
     else:
         curl.unsetopt(pycurl.USERPWD)
         logging.debug("%s %s", request.method, request.url)

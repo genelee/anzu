@@ -32,16 +32,16 @@ Example usage for Google OpenID::
 
     class GoogleHandler(tornado.web.RequestHandler, tornado.auth.GoogleMixin):
         @tornado.web.asynchronous
-    def get(self):
-        if self.get_argument("openid.mode", None):
-            self.get_authenticated_user(self.async_callback(self._on_auth))
-            return
-        self.authenticate_redirect()
+        def get(self):
+            if self.get_argument("openid.mode", None):
+                self.get_authenticated_user(self.async_callback(self._on_auth))
+                return
+            self.authenticate_redirect()
 
-    def _on_auth(self, user):
-        if not user:
-            raise anzu.web.HTTPError(500, "Google auth failed")
-        # Save the user with, e.g., set_secure_cookie()
+        def _on_auth(self, user):
+            if not user:
+                raise anzu.web.HTTPError(500, "Google auth failed")
+            # Save the user with, e.g., set_secure_cookie()
 """
 
 import base64
@@ -192,10 +192,7 @@ class OpenIdMixin(object):
             user["name"] = email.split("@")[0]
         if email: user["email"] = email
         if locale: user["locale"] = locale
-        if username:
-            user["username"] = username
-        elif email:
-            user["username"] = user["email"].split("@")[0]
+        if username: user["username"] = username
         callback(user)
 
 
@@ -226,7 +223,7 @@ class OAuthMixin(object):
         if getattr(self, "_OAUTH_VERSION", "1.0a") == "1.0a":
             http_client.fetch(
                 self._oauth_request_token_url(callback_uri=callback_uri,
-                extra_params=extra_params),
+                                              extra_params=extra_params),
                 self.async_callback(
                     self._on_request_token,
                     self._OAUTH_AUTHORIZE_URL,
@@ -266,7 +263,7 @@ class OAuthMixin(object):
             return
         token = dict(key=cookie_key, secret=cookie_secret)
         if oauth_verifier:
-          token["verifier"] = oauth_verifier
+            token["verifier"] = oauth_verifier
         if http_client is None:
             http_client = httpclient.AsyncHTTPClient()
         http_client.fetch(self._oauth_access_token_url(token),
@@ -425,19 +422,19 @@ class TwitterMixin(OAuthMixin):
     When your application is set up, you can use this Mixin like this
     to authenticate the user with Twitter and get access to their stream::
 
-    class TwitterHandler(anzu.web.RequestHandler,
-                         anzu.auth.TwitterMixin):
-        @anzu.web.asynchronous
-        def get(self):
-            if self.get_argument("oauth_token", None):
-                self.get_authenticated_user(self.async_callback(self._on_auth))
-                return
-            self.authorize_redirect()
+        class TwitterHandler(anzu.web.RequestHandler,
+                             anzu.auth.TwitterMixin):
+            @anzu.web.asynchronous
+            def get(self):
+                if self.get_argument("oauth_token", None):
+                    self.get_authenticated_user(self.async_callback(self._on_auth))
+                    return
+                self.authorize_redirect()
 
-        def _on_auth(self, user):
-            if not user:
-                raise anzu.web.HTTPError(500, "Twitter auth failed")
-            # Save the user using, e.g., set_secure_cookie()
+            def _on_auth(self, user):
+                if not user:
+                    raise anzu.web.HTTPError(500, "Twitter auth failed")
+                # Save the user using, e.g., set_secure_cookie()
 
     The user object returned by get_authenticated_user() includes the
     attributes 'username', 'name', and all of the custom Twitter user
@@ -483,23 +480,23 @@ class TwitterMixin(OAuthMixin):
         attribute that can be used to make authenticated requests via
         this method. Example usage::
 
-        class MainHandler(anzu.web.RequestHandler,
-                          anzu.auth.TwitterMixin):
-            @anzu.web.authenticated
-            @anzu.web.asynchronous
-            def get(self):
-                self.twitter_request(
-                    "/statuses/update",
-                    post_args={"status": "Testing Anzu Web Server"},
-                    access_token=user["access_token"],
-                    callback=self.async_callback(self._on_post))
+            class MainHandler(anzu.web.RequestHandler,
+                              anzu.auth.TwitterMixin):
+                @anzu.web.authenticated
+                @anzu.web.asynchronous
+                def get(self):
+                    self.twitter_request(
+                        "/statuses/update",
+                        post_args={"status": "Testing Anzu Web Server"},
+                        access_token=user["access_token"],
+                        callback=self.async_callback(self._on_post))
 
-            def _on_post(self, new_entry):
-                if not new_entry:
-                    # Call failed; perhaps missing permission?
-                    self.authorize_redirect()
-                    return
-                self.finish("Posted a message!")
+                def _on_post(self, new_entry):
+                    if not new_entry:
+                        # Call failed; perhaps missing permission?
+                        self.authorize_redirect()
+                        return
+                    self.finish("Posted a message!")
 
         """
         # Add the OAuth resource request signature if we have credentials
@@ -561,19 +558,19 @@ class FriendFeedMixin(OAuthMixin):
     When your application is set up, you can use this Mixin like this
     to authenticate the user with FriendFeed and get access to their feed::
 
-    class FriendFeedHandler(anzu.web.RequestHandler,
-                            anzu.auth.FriendFeedMixin):
-        @anzu.web.asynchronous
-        def get(self):
-            if self.get_argument("oauth_token", None):
-                self.get_authenticated_user(self.async_callback(self._on_auth))
-                return
-            self.authorize_redirect()
+        class FriendFeedHandler(anzu.web.RequestHandler,
+                                anzu.auth.FriendFeedMixin):
+            @anzu.web.asynchronous
+            def get(self):
+                if self.get_argument("oauth_token", None):
+                    self.get_authenticated_user(self.async_callback(self._on_auth))
+                    return
+                self.authorize_redirect()
 
-        def _on_auth(self, user):
-            if not user:
-                raise anzu.web.HTTPError(500, "FriendFeed auth failed")
-            # Save the user using, e.g., set_secure_cookie()
+            def _on_auth(self, user):
+                if not user:
+                    raise anzu.web.HTTPError(500, "FriendFeed auth failed")
+                # Save the user using, e.g., set_secure_cookie()
 
     The user object returned by get_authenticated_user() includes the
     attributes 'username', 'name', and 'description' in addition to
@@ -605,23 +602,23 @@ class FriendFeedMixin(OAuthMixin):
         attribute that can be used to make authenticated requests via
         this method. Example usage::
 
-        class MainHandler(anzu.web.RequestHandler,
-                          anzu.auth.FriendFeedMixin):
-            @anzu.web.authenticated
-            @anzu.web.asynchronous
-            def get(self):
-                self.friendfeed_request(
-                    "/entry",
-                    post_args={"body": "Testing Anzu Web Server"},
-                    access_token=self.current_user["access_token"],
-                    callback=self.async_callback(self._on_post))
+            class MainHandler(anzu.web.RequestHandler,
+                              anzu.auth.FriendFeedMixin):
+                @anzu.web.authenticated
+                @anzu.web.asynchronous
+                def get(self):
+                    self.friendfeed_request(
+                        "/entry",
+                        post_args={"body": "Testing Anzu Web Server"},
+                        access_token=self.current_user["access_token"],
+                        callback=self.async_callback(self._on_post))
 
-            def _on_post(self, new_entry):
-                if not new_entry:
-                    # Call failed; perhaps missing permission?
-                    self.authorize_redirect()
-                    return
-                self.finish("Posted a message!")
+                def _on_post(self, new_entry):
+                    if not new_entry:
+                        # Call failed; perhaps missing permission?
+                        self.authorize_redirect()
+                        return
+                    self.finish("Posted a message!")
 
         """
         # Add the OAuth resource request signature if we have credentials
@@ -681,18 +678,18 @@ class GoogleMixin(OpenIdMixin, OAuthMixin):
     values for the user, including 'email', 'name', and 'locale'.
     Example usage::
 
-    class GoogleHandler(anzu.web.RequestHandler, anzu.auth.GoogleMixin):
-       @anzu.web.asynchronous
-       def get(self):
-           if self.get_argument("openid.mode", None):
-               self.get_authenticated_user(self.async_callback(self._on_auth))
-               return
-        self.authenticate_redirect()
+        class GoogleHandler(anzu.web.RequestHandler, anzu.auth.GoogleMixin):
+           @anzu.web.asynchronous
+           def get(self):
+               if self.get_argument("openid.mode", None):
+                   self.get_authenticated_user(self.async_callback(self._on_auth))
+                   return
+            self.authenticate_redirect()
 
-        def _on_auth(self, user):
-            if not user:
-                raise anzu.web.HTTPError(500, "Google auth failed")
-            # Save the user with, e.g., set_secure_cookie()
+            def _on_auth(self, user):
+                if not user:
+                    raise anzu.web.HTTPError(500, "Google auth failed")
+                # Save the user with, e.g., set_secure_cookie()
 
     """
     _OPENID_ENDPOINT = "https://www.google.com/accounts/o8/ud"
@@ -758,19 +755,19 @@ class FacebookMixin(object):
     When your application is set up, you can use this Mixin like this
     to authenticate the user with Facebook::
 
-    class FacebookHandler(anzu.web.RequestHandler,
-                          anzu.auth.FacebookMixin):
-        @anzu.web.asynchronous
-        def get(self):
-            if self.get_argument("session", None):
-                self.get_authenticated_user(self.async_callback(self._on_auth))
-                return
-            self.authenticate_redirect()
+        class FacebookHandler(anzu.web.RequestHandler,
+                              anzu.auth.FacebookMixin):
+            @anzu.web.asynchronous
+            def get(self):
+                if self.get_argument("session", None):
+                    self.get_authenticated_user(self.async_callback(self._on_auth))
+                    return
+                self.authenticate_redirect()
 
-        def _on_auth(self, user):
-            if not user:
-                raise anzu.web.HTTPError(500, "Facebook auth failed")
-            # Save the user using, e.g., set_secure_cookie()
+            def _on_auth(self, user):
+                if not user:
+                    raise anzu.web.HTTPError(500, "Facebook auth failed")
+                # Save the user using, e.g., set_secure_cookie()
 
     The user object returned by get_authenticated_user() includes the
     attributes 'facebook_uid' and 'name' in addition to session attributes
@@ -790,7 +787,6 @@ class FacebookMixin(object):
             "display": "page",
             "next": urlparse.urljoin(self.request.full_url(), callback_uri),
             "return_session": "true",
-            "req_perms": "read_stream",
         }
         if cancel_uri:
             args["cancel_url"] = urlparse.urljoin(
@@ -853,22 +849,22 @@ class FacebookMixin(object):
 
         Here is an example for the stream.get() method::
 
-        class MainHandler(anzu.web.RequestHandler,
-                          anzu.auth.FacebookMixin):
-            @anzu.web.authenticated
-            @anzu.web.asynchronous
-            def get(self):
-                self.facebook_request(
-                    method="stream.get",
-                    callback=self.async_callback(self._on_stream),
-                    session_key=self.current_user["session_key"])
+            class MainHandler(anzu.web.RequestHandler,
+                              anzu.auth.FacebookMixin):
+                @anzu.web.authenticated
+                @anzu.web.asynchronous
+                def get(self):
+                    self.facebook_request(
+                        method="stream.get",
+                        callback=self.async_callback(self._on_stream),
+                        session_key=self.current_user["session_key"])
 
-            def _on_stream(self, stream):
-                if stream is None:
-                   # Not authorized to read the stream yet?
-                   self.redirect(self.authorize_redirect("read_stream"))
-                   return
-                self.render("stream.html", stream=stream)
+                def _on_stream(self, stream):
+                    if stream is None:
+                       # Not authorized to read the stream yet?
+                       self.redirect(self.authorize_redirect("read_stream"))
+                       return
+                    self.render("stream.html", stream=stream)
 
         """
         self.require_setting("facebook_api_key", "Facebook Connect")
@@ -942,23 +938,23 @@ class FacebookGraphMixin(OAuth2Mixin):
 
           class FacebookGraphLoginHandler(LoginHandler, tornado.auth.FacebookGraphMixin):
             @tornado.web.asynchronous
-        def get(self):
-            if self.get_argument("code", False):
-                self.get_authenticated_user(
-                  redirect_uri='/auth/facebookgraph/',
-                  client_id=self.settings["facebook_api_key"],
-                  client_secret=self.settings["facebook_secret"],
-                  code=self.get_argument("code"),
-                  callback=self.async_callback(
-                    self._on_login))
-                return
-            self.authorize_redirect(redirect_uri='/auth/facebookgraph/',
-                                    client_id=self.settings["facebook_api_key"],
-                                    extra_params={"scope": "read_stream,offline_access"})
+            def get(self):
+                if self.get_argument("code", False):
+                    self.get_authenticated_user(
+                      redirect_uri='/auth/facebookgraph/',
+                      client_id=self.settings["facebook_api_key"],
+                      client_secret=self.settings["facebook_secret"],
+                      code=self.get_argument("code"),
+                      callback=self.async_callback(
+                        self._on_login))
+                    return
+                self.authorize_redirect(redirect_uri='/auth/facebookgraph/',
+                                        client_id=self.settings["facebook_api_key"],
+                                        extra_params={"scope": "read_stream,offline_access"})
 
-        def _on_login(self, user):
-          logging.error(user)
-          self.finish()
+            def _on_login(self, user):
+              logging.error(user)
+              self.finish()
 
       """
       http = httpclient.AsyncHTTPClient()
@@ -1027,23 +1023,23 @@ class FacebookGraphMixin(OAuth2Mixin):
         attribute that can be used to make authenticated requests via
         this method. Example usage::
 
-        class MainHandler(anzu.web.RequestHandler,
-                          anzu.auth.FacebookGraphMixin):
-            @anzu.web.authenticated
-            @anzu.web.asynchronous
-            def get(self):
-                self.facebook_request(
-                    "/me/feed",
-                    post_args={"message": "I am posting from my Anzu application!"},
-                    access_token=self.current_user["access_token"],
-                    callback=self.async_callback(self._on_post))
+            class MainHandler(anzu.web.RequestHandler,
+                              anzu.auth.FacebookGraphMixin):
+                @anzu.web.authenticated
+                @anzu.web.asynchronous
+                def get(self):
+                    self.facebook_request(
+                        "/me/feed",
+                        post_args={"message": "I am posting from my Anzu application!"},
+                        access_token=self.current_user["access_token"],
+                        callback=self.async_callback(self._on_post))
 
-            def _on_post(self, new_entry):
-                if not new_entry:
-                    # Call failed; perhaps missing permission?
-                    self.authorize_redirect()
-                    return
-                self.finish("Posted a message!")
+                def _on_post(self, new_entry):
+                    if not new_entry:
+                        # Call failed; perhaps missing permission?
+                        self.authorize_redirect()
+                        return
+                    self.finish("Posted a message!")
 
         """
         url = "https://graph.facebook.com" + path

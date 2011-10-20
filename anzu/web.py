@@ -78,7 +78,6 @@ import traceback
 import types
 import urllib
 import urlparse
-import util
 import uuid
 
 from mako.template import Template
@@ -133,7 +132,7 @@ class RequestHandler(object):
         # The template {% module %} directive looks in `_modules` to avoid
         # possible conflicts.
         self.ui["_modules"] = ObjectDict((n, self._ui_module(n, m)) for n, m in
-                                application.ui_modules.iteritems())
+                                 application.ui_modules.iteritems())
         self.ui["modules"] = self.ui["_modules"]
         self.clear()
         # Check since connection is not available in WSGI
@@ -275,11 +274,11 @@ class RequestHandler(object):
             return email.utils.formatdate(t, localtime=False, usegmt=True)
         else:
             raise TypeError("Unsupported header value %r" % value)
-            # If \n is allowed into the header, it is possible to inject
-            # additional headers or split the request. Also cap length to
-            # prevent obviously erroneous values.
+        # If \n is allowed into the header, it is possible to inject
+        # additional headers or split the request. Also cap length to
+        # prevent obviously erroneous values.
         if len(value) > 4000 or re.match(b(r"[\x00-\x1f]"), value):
-                raise ValueError("Unsafe header value %r", value)
+            raise ValueError("Unsafe header value %r", value)
         return value
 
 
@@ -316,7 +315,7 @@ class RequestHandler(object):
                 # Get rid of any weird control chars (unless decoding gave
                 # us bytes, in which case leave it alone)
                 v = re.sub(r"[\x00-\x08\x0e-\x1f]", " ", v)
-        if strip:
+            if strip:
                 v = v.strip()
             values.append(v)
         return values
@@ -685,12 +684,12 @@ class RequestHandler(object):
                 "Etag" not in self._headers):
                 etag = self.compute_etag()
                 if etag is not None:
-                inm = self.request.headers.get("If-None-Match")
-                if inm and inm.find(etag) != -1:
-                    self._write_buffer = []
-                    self.set_status(304)
-                else:
-                    self.set_header("Etag", etag)
+                    inm = self.request.headers.get("If-None-Match")
+                    if inm and inm.find(etag) != -1:
+                        self._write_buffer = []
+                        self.set_status(304)
+                    else:
+                        self.set_header("Etag", etag)
             if "Content-Length" not in self._headers:
                 content_length = sum(len(part) for part in self._write_buffer)
                 self.set_header("Content-Length", content_length)
@@ -705,6 +704,7 @@ class RequestHandler(object):
                                    expires=self.session.expires,
                                    path=self.settings.get('session_cookie_path', '/'),
                                    domain=self.settings.get('session_cookie_domain'))
+
         if hasattr(self.request, "connection"):
             # Now that the request is finished, clear the callback we
             # set on the IOStream (which would otherwise prevent the
@@ -716,7 +716,6 @@ class RequestHandler(object):
             self.flush(include_footers=True)
             self.request.finish()
             self._log()
-
         self._finished = True
 
     def send_error(self, status_code=500, **kwargs):
@@ -782,9 +781,9 @@ class RequestHandler(object):
             self.finish()
         else:
             self.finish("<html><title>%(code)d: %(message)s</title>"
-               "<body>%(code)d: %(message)s</body></html>" % {
-            "code": status_code,
-            "message": httplib.responses[status_code],
+                        "<body>%(code)d: %(message)s</body></html>" % {
+                    "code": status_code,
+                    "message": httplib.responses[status_code],
                     })
 
     @property
@@ -1160,7 +1159,7 @@ def asynchronous(method):
         self._auto_finish = False
         with stack_context.ExceptionStackContext(
             self._stack_context_handle_exception):
-        return method(self, *args, **kwargs)
+            return method(self, *args, **kwargs)
     return wrapper
 
 
@@ -1173,7 +1172,7 @@ def removeslash(method):
     """
     @functools.wraps(method)
     def wrapper(self, *args, **kwargs):
-        if self.request.path.endswith("/") and not self.request.path == "/":
+        if self.request.path.endswith("/"):
             if self.request.method in ("GET", "HEAD"):
                 uri = self.request.path.rstrip("/")
                 if uri:  # don't try to redirect '/' to ''
@@ -1351,7 +1350,7 @@ class Application(object):
             import autoreload
             autoreload.start()
 
-    def listen(self, port, address=None, **kwargs):
+    def listen(self, port, address="", **kwargs):
         """Starts an HTTP server for this application on the given port.
 
         This is a convenience alias for creating an HTTPServer object
@@ -1475,25 +1474,25 @@ class Application(object):
                 for spec in handlers:
                     match = spec.regex.match(request.path)
                     if match:
-                    handler = spec.handler_class(self, request, **spec.kwargs)
-                    if spec.regex.groups:
-                        # None-safe wrapper around url_unescape to handle
-                        # unmatched optional groups correctly
-                        def unquote(s):
-                            if s is None: return s
-                            return escape.url_unescape(s, encoding=None)
-                        # Pass matched groups to the handler.  Since
-                        # match.groups() includes both named and unnamed groups,
-                        # we want to use either groups or groupdict but not both.
-                        # Note that args are passed as bytes so the handler can
-                        # decide what encoding to use.
+                        handler = spec.handler_class(self, request, **spec.kwargs)
+                        if spec.regex.groups:
+                            # None-safe wrapper around url_unescape to handle
+                            # unmatched optional groups correctly
+                            def unquote(s):
+                                if s is None: return s
+                                return escape.url_unescape(s, encoding=None)
+                            # Pass matched groups to the handler.  Since
+                            # match.groups() includes both named and unnamed groups,
+                            # we want to use either groups or groupdict but not both.
+                            # Note that args are passed as bytes so the handler can
+                            # decide what encoding to use.
 
-                        if spec.regex.groupindex:
-                            kwargs = dict(
-                                (k, unquote(v))
-                                  for (k, v) in match.groupdict().iteritems())
-                        else:
-                            args = [unquote(s) for s in match.groups()]
+                            if spec.regex.groupindex:
+                                kwargs = dict(
+                                    (k, unquote(v))
+                                      for (k, v) in match.groupdict().iteritems())
+                            else:
+                                args = [unquote(s) for s in match.groups()]
                         break
             if not handler:
                 handler = ErrorHandler(self, request, status_code=404)
@@ -2050,8 +2049,8 @@ def _time_independent_equals(a, b):
         for x, y in zip(a,b):
             result |= x ^ y
     else:  # python2
-    for x, y in zip(a, b):
-        result |= ord(x) ^ ord(y)
+        for x, y in zip(a, b):
+            result |= ord(x) ^ ord(y)
     return result == 0
 
 def create_signed_value(secret, name, value):
@@ -2083,7 +2082,7 @@ def decode_signed_value(secret, name, value, max_age_days=31):
         return None
     if parts[1].startswith(b("0")):
         logging.warning("Tampered cookie %r", value)
-        try:
+    try:
         return base64.b64decode(parts[0])
     except Exception:
         return None

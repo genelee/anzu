@@ -297,19 +297,19 @@ class IOStream(object):
     def _run_callback(self, callback, *args):
         def wrapper():
             self._pending_callbacks -= 1
-        try:
+            try:
                 callback(*args)
             except Exception:
-            logging.error("Uncaught exception, closing connection.",
-                          exc_info=True)
-            # Close the socket on an uncaught exception from a user callback
-            # (It would eventually get closed when the socket object is
-            # gc'd, but we don't want to rely on gc happening before we
-            # run out of file descriptors)
-            self.close()
-            # Re-raise the exception so that IOLoop.handle_callback_exception
-            # can see it and log the error
-            raise
+                logging.error("Uncaught exception, closing connection.",
+                              exc_info=True)
+                # Close the socket on an uncaught exception from a user callback
+                # (It would eventually get closed when the socket object is
+                # gc'd, but we don't want to rely on gc happening before we
+                # run out of file descriptors)
+                self.close()
+                # Re-raise the exception so that IOLoop.handle_callback_exception
+                # can see it and log the error
+                raise
             self._maybe_add_error_listener()
         # We schedule callbacks to be run on the next IOLoop iteration
         # rather than running them directly for several reasons:

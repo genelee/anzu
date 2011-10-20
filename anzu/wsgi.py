@@ -60,20 +60,20 @@ class WSGIApplication(web.Application):
 
     Example usage::
 
-    import anzu.web
-    import anzu.wsgi
-    import wsgiref.simple_server
+        import anzu.web
+        import anzu.wsgi
+        import wsgiref.simple_server
 
-    class MainHandler(anzu.web.RequestHandler):
-        def get(self):
-            self.write("Hello, world")
+        class MainHandler(anzu.web.RequestHandler):
+            def get(self):
+                self.write("Hello, world")
 
-    if __name__ == "__main__":
-        application = anzu.wsgi.WSGIApplication([
-            (r"/", MainHandler),
-        ])
-        server = wsgiref.simple_server.make_server('', 8888, application)
-        server.serve_forever()
+        if __name__ == "__main__":
+            application = anzu.wsgi.WSGIApplication([
+                (r"/", MainHandler),
+            ])
+            server = wsgiref.simple_server.make_server('', 8888, application)
+            server.serve_forever()
 
     See the 'appengine' demo for an example of using this module to run
     a Tornado app on Google AppEngine.
