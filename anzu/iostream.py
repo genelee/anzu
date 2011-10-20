@@ -95,6 +95,7 @@ class IOStream(object):
         self._streaming_callback = None
         self._write_callback = None
         self._close_callback = None
+        self._closed_by_our_side = False
         self._connect_callback = None
         self._connecting = False
         self._state = None
@@ -143,8 +144,7 @@ class IOStream(object):
             # See if we've already got the data from a previous read
             if self._read_from_buffer():
                 return
-            self._check_closed()
-            if self._read_to_buffer() == 0:
+            if self._check_closed() or self._read_to_buffer() == 0:
                 break
         self._add_io_state(self.io_loop.READ)
 
@@ -157,8 +157,7 @@ class IOStream(object):
             # See if we've already got the data from a previous read
             if self._read_from_buffer():
                 return
-            self._check_closed()
-            if self._read_to_buffer() == 0:
+            if self._check_closed() or self._read_to_buffer() == 0:
                 break
         self._add_io_state(self.io_loop.READ)
 
@@ -177,8 +176,7 @@ class IOStream(object):
         while True:
             if self._read_from_buffer():
                 return
-            self._check_closed()
-            if self._read_to_buffer() == 0:
+            if self._check_closed() or self._read_to_buffer() == 0:
                 break
         self._add_io_state(self.io_loop.READ)
 
@@ -210,6 +208,7 @@ class IOStream(object):
         callback is simply overwritten with this new callback.
         """
         assert isinstance(data, bytes_type)
+        self._closed_by_our_side = False
         self._check_closed()
         self._write_buffer.append(data)
         self._write_callback = stack_context.wrap(callback)
@@ -224,6 +223,7 @@ class IOStream(object):
 
     def close(self):
         """Close this stream."""
+        self._closed_by_our_side = True
         if self.socket is not None:
             if self._read_until_close:
                 callback = self._read_callback
@@ -501,6 +501,8 @@ class IOStream(object):
 
     def _check_closed(self):
         if not self.socket:
+            if self._closed_by_our_side:
+                return True
             raise IOError("Stream is closed")
 
     def _maybe_add_error_listener(self):
