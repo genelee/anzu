@@ -262,7 +262,7 @@ class _HTTPConnection(object):
             self.request.headers["Accept-Encoding"] = "gzip"
         req_path = ((parsed.path or '/') +
                 (('?' + parsed.query) if parsed.query else ''))
-        request_lines = [utf8("%s %s HTTP/1.1" % (self.request.method,
+        request_lines = [utf8("%s %s HTTP/1.0" % (self.request.method,
                                                   req_path))]
         for k, v in self.request.headers.get_all():
             line = utf8(k) + b(": ") + utf8(v)
