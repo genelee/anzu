@@ -1,4 +1,5 @@
 from anzu import netutil
+from anzu.ioloop import IOLoop
 from anzu.iostream import IOStream
 from anzu.testing import AsyncHTTPTestCase, LogTrapTestCase, get_unused_port
 from anzu.util import b
@@ -56,6 +57,16 @@ class TestIOStream(AsyncHTTPTestCase, LogTrapTestCase):
         self.stream.read_bytes(3, self.stop)
         data = self.wait()
         self.assertEqual(data, b("200"))
+
+    def test_write_zero_bytes(self):
+        # Attempting to write zero bytes should run the callback without
+        # going into an infinite loop.
+        server, client = self.make_iostream_pair()
+        server.write(b(''), callback=self.stop)
+        self.wait()
+        # As a side effect, the stream is now listening for connection
+        # close (if it wasn't already), but is not listening for writes
+        self.assertEqual(server._state, IOLoop.READ|IOLoop.ERROR)
 
     def test_connection_refused(self):
         # When a connection is refused, the connect callback should not
