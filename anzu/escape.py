@@ -109,6 +109,7 @@ def xhtml_unescape(value):
     return re.sub(r"&(#?)(\w+?);", _convert_entity, _unicode(value))
 
 
+jsonlib_escapes_forward_slashes = '"<\\/"' == _json_encode('</')
 def json_encode(value):
     """JSON-encodes the given Python object."""
     # JSON permits but does not require forward slashes to be escaped.
@@ -117,7 +118,12 @@ def json_encode(value):
     # the javscript.  Some json libraries do this escaping by default,
     # although python's standard library does not, so we do it here.
     # http://stackoverflow.com/questions/1580647/json-why-are-forward-slashes-escaped
-    return _json_encode(recursive_unicode(value)).replace("</", "<\\/")
+    # (Will add about 1.0 seconds to the aforementioned benchmark results;
+    #  except for cjson and patched ujson, which do not need this.)
+    if not jsonlib_escapes_forward_slashes:
+        return _json_encode(recursive_unicode(value)).replace("</", "<\\/")
+    else:
+        return _json_encode(recursive_unicode(value))
 
 
 def json_decode(value):
