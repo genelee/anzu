@@ -386,6 +386,7 @@ try:
             if not kwargs.has_key('session_id'):
                 self.save()
 
+        @staticmethod
         def _parse_connection_details(details):
             # redis://[auth@][host[:port]][/db]
             match = re.match('redis://(?:(\S+)@)?([^\s:/]+)?(?::(\d+))?(?:/(\d+))?$', details)
@@ -588,6 +589,7 @@ try:
             """Delete the session from storage."""
             self.connection.delete(self.session_id)
 
+        @staticmethod
         def delete_expired(connection):
             """With Memcached as session storage, this function does
             not make sense as all keys are saved with expiry time
