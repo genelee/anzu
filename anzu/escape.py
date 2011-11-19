@@ -34,30 +34,66 @@ try:
 except ImportError:
     from cgi import parse_qs
 
-# json module is in the standard library as of python 2.6; fall back to
-# simplejson if present for older versions.
+# Select the fastest JSON library available according to benchmark:
+# https://gist.github.com/1379050
+# Loading (decoding):
+#   ujson: 3.33
+#   cjson: 4.37
+#   json: 16.62
+#   simplejson: 9.71
+#   cPickle: 7.70
+# Dumping (encoding):
+#   ujson: 2.27
+#   cjson: 6.57
+#   json: 11.86
+#   simplejson: 14.98
+#   cPickle: 30.98
+# +- 0.5 seconds
 try:
-    import json
-    assert hasattr(json, "loads") and hasattr(json, "dumps")
-    _json_decode = json.loads
-    _json_encode = json.dumps
-except Exception:
+    import ujson
+    _json_decode = ujson.decode
+    _json_encode = ujson.encode
+except ImportError:
     try:
-        import simplejson
-        _json_decode = lambda s: simplejson.loads(_unicode(s))
-        _json_encode = lambda v: simplejson.dumps(v)
-    except ImportError:
+        import cjson
+        # You can find the patch for cjson here: http://vazor.com/media/python-cjson-1.0.5.diff
+        # An unpatched version (1.0.5 is the latest as of writing)
+        # won't decode that correctly and thus trigger an AssertionError here:
+        assert '/' == cjson.decode('"\/"')
+        _json_decode = cjson.decode
+        _json_encode = cjson.encode
+    except (AssertionError, ImportError):
         try:
-            # For Google AppEngine
-            from django.utils import simplejson
+            # But - json ist slower? We will overwrite that later by simplejson. ;-)
+            import json
+            assert hasattr(json, "loads") and hasattr(json, "dumps")
+            _json_decode = json.loads
+            _json_encode = json.dumps
+            has_python_json = True
+        except (AssertionError, ImportError):
+            has_python_json = False
+
+        try:
+            import simplejson
             _json_decode = lambda s: simplejson.loads(_unicode(s))
-            _json_encode = lambda v: simplejson.dumps(v)
+            if not has_python_json:
+                _json_encode = lambda v: simplejson.dumps(v)
         except ImportError:
-            def _json_decode(s):
-                raise NotImplementedError(
-                    "A JSON parser is required, e.g., simplejson at "
-                    "http://pypi.python.org/pypi/simplejson/")
-            _json_encode = _json_decode
+            try:
+                # For Google AppEngine
+                from django.utils import simplejson
+                _json_decode = lambda s: simplejson.loads(_unicode(s))
+                if not has_python_json:
+                    _json_encode = lambda v: simplejson.dumps(v)
+            except ImportError:
+                if not has_python_json:
+                    def _json_decode(s):
+                        raise NotImplementedError(
+                            "A JSON parser is required, e.g., simplejson at "
+                            "http://pypi.python.org/pypi/simplejson/")
+                    _json_encode = _json_decode
+                else:
+                    pass
 
 
 _XHTML_ESCAPE_RE = re.compile('[&<>"]')
@@ -146,7 +182,7 @@ else:
         for k,v in result.iteritems():
             encoded[k] = [i.encode('latin1') for i in v]
         return encoded
-        
+
 
 
 _UTF8_TYPES = (bytes, type(None))
@@ -215,7 +251,7 @@ def recursive_unicode(obj):
     else:
         return obj
 
-# I originally used the regex from 
+# I originally used the regex from
 # http://daringfireball.net/2010/07/improved_regex_for_matching_urls
 # but it gets all exponential on certain patterns (such as too many trailing
 # dots), causing the regex matcher to never return.
