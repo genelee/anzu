@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# Copyright 2010 W-Mark Kubacki; wmark@hurrikane.de
+# Copyright 2010-2012 W-Mark Kubacki; wmark@hurrikane.de
 # for parts of this work, as stated below:
 # Copyright 2005-2009 Kevin Dangoor and contributors. TurboGears is a trademark of Kevin Dangoor.
 #
@@ -10,6 +10,7 @@
 #
 
 import functools
+import logging
 from inspect import getargspec
 
 from formencode import ForEach
@@ -46,6 +47,7 @@ def error_handler(call_on_errors):
             try:
                 return method(self, *args, **kwargs)
             except InputInvalidException:
+                logging.debug("InputInvalidException has been raised; the error handler will be invoked")
                 return call_on_errors(self, *args, **kwargs)
         return wrapper
     return entangle
@@ -125,6 +127,8 @@ def validate(form=None, validators=None, state_factory=None):
                 else:
                     try:
                         value = kw.copy()
+                        if '_xsrf' in value:
+                            del value['_xsrf']
                         kw.update(validators.to_python(value, state))
                     except Invalid, e:
                         errors = e.unpack_errors()
@@ -134,6 +138,7 @@ def validate(form=None, validators=None, state_factory=None):
             request.validation_state = state
 
             if errors:
+                self.set_status(400)
                 if 'validation_errors' in getargspec(method).args:
                     kwargs['validation_errors'] = errors
                 else:
